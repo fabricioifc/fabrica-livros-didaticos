@@ -1,0 +1,51 @@
+<%- include('../parciais/topo') %>
+<% const nomes = { ADMIN_CAMPUS: 'Administração do campus', OPERADOR: 'Atendimento', CONSULTA: 'Consulta' }; %>
+<p><a href="/">Voltar ao início</a></p>
+<h1>Equipe — <%= campus.nome_curto %></h1>
+<p>Servidores com acesso a este campus. Para incluir alguém, a pessoa deve entrar no sistema e solicitar acesso ao campus.</p>
+<% if (membros.length === 0) { %>
+  <%- include('../parciais/mensagem', { tipo: 'info', titulo: 'Nenhum servidor com acesso a este campus.', corpo: null }) %>
+<% } else { %>
+  <%# Table: https://www.gov.br/ds/components/table (estrutura do exemplo table-irregular-1, core 3.7.0). %>
+  <div class="br-table" title="Equipe do campus">
+    <div class="table-header">
+      <div class="top-bar"><div class="table-title">Servidores (<%= membros.length %>)</div></div>
+    </div>
+    <table aria-label="Servidores com acesso ao campus e seus papéis">
+      <thead>
+        <tr><th scope="col">Servidor</th><th scope="col">Papéis</th><th scope="col">Conceder</th></tr>
+      </thead>
+      <tbody>
+        <% membros.forEach((m) => { const tem = (p) => m.atribuicoes.some((a) => a.papel === p); %>
+          <tr>
+            <td><%= m.nome %><br><span class="text-down-01"><%= m.email %></span></td>
+            <td>
+              <% m.atribuicoes.forEach((a) => { const pode = a.papel === 'ADMIN_CAMPUS' ? podeConcederAdminCampus : podeConcederOperador; %>
+                <form method="post" action="/acesso/atribuicoes/<%= a.id %>/revogar" class="mb-1">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <%= nomes[a.papel] %>
+                  <% if (pode) { %>
+                    <button class="br-button secondary small ml-2" type="submit" aria-label="Remover <%= nomes[a.papel] %> de <%= m.nome %>">Remover</button>
+                  <% } %>
+                </form>
+              <% }) %>
+            </td>
+            <td>
+              <% [['OPERADOR', podeConcederOperador], ['ADMIN_CAMPUS', podeConcederAdminCampus]].forEach(([papel, pode]) => { %>
+                <% if (pode && !tem(papel)) { %>
+                  <form method="post" action="/acesso/campi/<%= campus.id %>/equipe/papeis" class="mb-1">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <input type="hidden" name="usuarioId" value="<%= m.usuario_id %>">
+                    <input type="hidden" name="papel" value="<%= papel %>">
+                    <button class="br-button secondary small" type="submit" aria-label="<%= nomes[papel] %> para <%= m.nome %>"><%= nomes[papel] %></button>
+                  </form>
+                <% } %>
+              <% }) %>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+<% } %>
+<%- include('../parciais/rodape') %>

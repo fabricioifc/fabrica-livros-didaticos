@@ -19,6 +19,8 @@ const esquema = z.object({
   APP_URL: z.url().default('http://localhost:3000'),
   SESSION_SECRET: opcional,
   SESSAO_INATIVIDADE_MINUTOS: z.coerce.number().int().min(5).max(24 * 60).default(60),
+  // Por IP, a cada 15 minutos. Alto o bastante para uma turma inteira atrás do mesmo IP (NAT do campus).
+  LIMITE_LOGIN_15MIN: z.coerce.number().int().min(10).max(100000).default(300),
   GOOGLE_CLIENT_ID: opcional,
   GOOGLE_CLIENT_SECRET: opcional,
 });
@@ -47,6 +49,7 @@ export function carregarConfig(env = process.env) {
     appUrl,
     segredoSessao: c.SESSION_SECRET,
     inatividadeMinutos: c.SESSAO_INATIVIDADE_MINUTOS,
+    limiteLogin15Min: c.LIMITE_LOGIN_15MIN,
     google: c.GOOGLE_CLIENT_ID
       ? { clientId: c.GOOGLE_CLIENT_ID, clientSecret: c.GOOGLE_CLIENT_SECRET, redirectUri: `${appUrl}/auth/callback` }
       : null,

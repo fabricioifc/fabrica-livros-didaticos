@@ -121,6 +121,21 @@ describe('Login (RF-001)', () => {
   });
 });
 
+describe('Limite de tentativas de login', () => {
+  test('com limite 10, a 11ª tentativa de iniciar login no mesmo IP recebe 429', async () => {
+    const limitado = await iniciarServidor({ pool: banco.pool, provedor, env: { LIMITE_LOGIN_15MIN: '10' } });
+    try {
+      const nav = new Navegador(limitado.url);
+      const status = [];
+      for (let i = 0; i < 11; i++) status.push((await nav.pedir('/auth/login')).status);
+      assert.deepEqual(status.slice(0, 10), Array(10).fill(303));
+      assert.equal(status[10], 429);
+    } finally {
+      await limitado.fechar();
+    }
+  });
+});
+
 describe('Primeiro acesso do servidor (RF-002) e CSRF', () => {
   test('lista só campi ativos; solicitação exige token CSRF; depois mostra "Aguardando confirmação" (CA-002.1)', async () => {
     const nav = new Navegador(srv.url);

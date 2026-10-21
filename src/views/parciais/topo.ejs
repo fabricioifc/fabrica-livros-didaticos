@@ -50,3 +50,6 @@
     <div class="container-lg d-flex">
       <div class="col mb-5">
         <div class="main-content mt-4" id="main-content">
+          <% if (typeof aviso !== 'undefined' && aviso) { %>
+            <div class="mb-3"><%- include('mensagem', { tipo: aviso.tipo, titulo: aviso.titulo, corpo: aviso.corpo }) %></div>
+          <% } %>

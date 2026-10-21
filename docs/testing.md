@@ -54,6 +54,7 @@ npm test
 | `test/integration/acesso-estudante.test.js` | RF-006: ligação da conta ao cadastro, estudante sem cadastro, bloqueio de funções de servidor e RLS dos cadastros |
 | `test/integration/acesso-isolamento.test.js` | Tentativas de violar o isolamento **direto no banco** (RLS), imutabilidade e vazamento de contexto entre conexões |
 | `test/integration/rotas-acesso.test.js` | Rotas de ponta a ponta com sessão real: login, regeneração da sessão, state inválido, domínio recusado, XSS, CSRF, escolha de campus, revogação e desativação na hora, logout, estudante |
+| `test/integration/rotas-administracao.test.js` | RF-003/RF-004 pela interface: lista e decisão de solicitações, equipe e papéis, com tentativas por URL e formulário forjado (outro campus, sem CSRF, quem não é da equipe) |
 | `test/integration/app.test.js` | Servidor HTTP: `GET /saude` (inclusive com banco fora do ar) e 404 padrão |
 | `test/integration/test-database.test.js` | Versão e conexão do banco, desfazimento de transações |
 | `test/docs/` | Consistência da documentação e regressões de decisões revogadas |
@@ -77,11 +78,11 @@ npm test
 
 | Métrica | Quantidade |
 |---|---|
-| Aprovados | 122 |
+| Aprovados | 134 |
 | Falhos | 0 |
 | Ignorados (`skip`) | 0 |
-| Pendentes (`todo`, funcionalidades não implementadas) | 70 |
-| Total | 192 |
+| Pendentes (`todo`, funcionalidades não implementadas) | 69 |
+| Total | 203 |
 
 Cobertura (`npm run test:coverage`), incluindo `test/helpers/`: 98,0% das linhas e 95,1% dos ramos; `servico.js` e `dominio.js` do acesso com 100% das linhas. Lacunas conhecidas:
 

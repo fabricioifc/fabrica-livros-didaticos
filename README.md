@@ -4,7 +4,7 @@ Gestão de entrega e devolução de livros didáticos do Instituto Federal Catar
 
 Documentação: [`AGENTS.md`](AGENTS.md) (regras e decisões), [`docs/requirements.md`](docs/requirements.md), [`docs/business-rules.md`](docs/business-rules.md), [`docs/architecture.md`](docs/architecture.md), [`docs/testing.md`](docs/testing.md).
 
-> Situação: login com o Google, escolha de campus pelo servidor e área inicial do estudante funcionando. Aprovação de acessos pela tela, estoque, entregas e devoluções ainda não existem.
+> Situação: login com o Google, solicitação e aprovação de acesso por campus, gestão da equipe do campus e área inicial do estudante funcionando. Estoque, entregas e devoluções ainda não existem.
 
 ## Desenvolvimento com Docker
 
@@ -44,7 +44,14 @@ Copie `.env.example` para `.env` e preencha as credenciais do cliente OAuth (URI
 
 A aplicação conecta como `livros_app_dev`, que **não** é dono das tabelas e só tem os privilégios do papel `livros_app`, sujeito ao isolamento entre campi (RLS), como em produção. Migrações e seeds usam o dono do banco (`livros`).
 
-Dados de desenvolvimento (`db/seeds/dev/`): Campus Fraiburgo e um campus fictício, para exercitar o uso multi-campus desde o início. Nunca carregar dados reais de estudantes (AGENTS.md, regra 15).
+Dados de desenvolvimento (`db/seeds/dev/`), todos fictícios (AGENTS.md, regra 15):
+
+| Arquivo | Conteúdo |
+|---|---|
+| `001_campi.sql` | Campus Fraiburgo e "Campus Exemplo (fictício)", para exercitar o uso multi-campus |
+| `002_pessoas.sql` | 7 servidores e 3 estudantes fictícios (e-mails `@exemplo.invalid`, que **não fazem login**): solicitações pendentes de Ana e Bruno (Fraiburgo) e Carla (Exemplo); equipes com Diego e Elisa (Fraiburgo) e Fábio e Gabriela (Exemplo) |
+
+Com a sua conta de administrador você aprova ou recusa as solicitações e gerencia as equipes. O seed não desfaz o que você fizer na interface; para voltar ao estado inicial, use `npm run dev:reset` (apaga o banco de desenvolvimento).
 
 ## Testes
 

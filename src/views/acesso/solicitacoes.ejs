@@ -1,0 +1,38 @@
+<%- include('../parciais/topo') %>
+<p><a href="/">Voltar ao início</a></p>
+<h1>Solicitações de acesso</h1>
+<% if (solicitacoes.length === 0) { %>
+  <%- include('../parciais/mensagem', { tipo: 'info', titulo: 'Nenhuma solicitação aguardando decisão.', corpo: null }) %>
+<% } else { %>
+  <%# Table: https://www.gov.br/ds/components/table (estrutura do exemplo table-irregular-1, core 3.7.0), sem o menu de densidade, que depende de JavaScript. %>
+  <div class="br-table" title="Solicitações aguardando decisão">
+    <div class="table-header">
+      <div class="top-bar">
+        <div class="table-title">Aguardando decisão (<%= solicitacoes.length %>)</div>
+      </div>
+    </div>
+    <table aria-label="Solicitações de acesso aguardando decisão">
+      <thead>
+        <tr>
+          <th scope="col">Servidor</th>
+          <th scope="col">E-mail</th>
+          <th scope="col">Campus</th>
+          <th scope="col">Solicitado em</th>
+          <th scope="col">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% solicitacoes.forEach((s) => { %>
+          <tr>
+            <td><%= s.nome %></td>
+            <td><%= s.email %></td>
+            <td><%= s.campus %></td>
+            <td><%= new Date(s.solicitada_em).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' }) %></td>
+            <td><a class="br-button secondary small" href="/acesso/solicitacoes/<%= s.id %>" aria-label="Analisar solicitação de <%= s.nome %>">Analisar</a></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+<% } %>
+<%- include('../parciais/rodape') %>

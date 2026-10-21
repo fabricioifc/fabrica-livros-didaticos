@@ -870,6 +870,7 @@ Uma funcionalidade só está concluída quando:
 | D-15 | 2026-10-21 | Estudante identificado no atendimento por matrícula: QR code com JWT assinado pelo servidor ou digitação; invalidação por `estudante.qr_versao` (DV-03). | Nenhum. |
 | D-16 | 2026-10-21 | Perda/dano apenas com justificativa; operador estorna os próprios registros; sem expiração de entrega preparada (DV-04, DV-09, Q-09). | Nenhum. |
 | D-17 | 2026-10-21 | Implementação do acesso: toda transação da aplicação roda com `SET LOCAL ROLE livros_app` (sem `BYPASSRLS`); o usuário de login da aplicação é membro de `livros_app`. `BOOTSTRAP_ADMIN_EMAILS` só cria administrador enquanto não houver **nenhum** administrador institucional ativo, para não virar acesso permanente. Ninguém decide a própria solicitação de acesso. | Nenhum. |
+| D-18 | 2026-10-21 | Papel de campus (Operador, Consulta, Admin do campus) só é concedido a quem **já tem papel vigente naquele campus**, isto é, entrou por solicitação aprovada. Fluxo: solicitar → aprovar → promover. Impede que um admin conceda papéis a servidores alheios ao campus. | Nenhum; novo campus: o servidor solicita acesso, o admin institucional aprova e o promove a admin do campus. |
 
 ---
 

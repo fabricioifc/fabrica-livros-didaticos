@@ -109,11 +109,21 @@ export async function painelDoServidor(executor, ctx) {
       podeAprovar: dominio.podeDecidirSolicitacao(ctx.atribuicoes, id),
     }));
     const institucionais = ctx.atribuicoes.filter((a) => !a.campus_id).map((a) => a.papel);
+    const campiAtivos = await repo.listarCampiAtivos(db);
+    const decide = campiQueDecide(ctx);
+    const administra = decide === null || decide.length > 0;
     return {
       acessos,
       institucionais,
       ultimaSolicitacao: await repo.buscarUltimaSolicitacao(db, ctx.usuario.id),
-      campiAtivos: await repo.listarCampiAtivos(db),
+      campiAtivos,
+      // Atalhos de administração (RF-003, RF-004).
+      pendentes: administra
+        ? (await repo.listarPendentesDecidiveis(db, { campi: decide ?? [], todos: decide === null, exceto: ctx.usuario.id })).length
+        : null,
+      campiAdministrados: decide === null
+        ? campiAtivos.map((c) => ({ id: c.id, nome: c.nome_curto }))
+        : acessos.filter((a) => a.podeAprovar).map((a) => ({ id: a.campusId, nome: a.campus })),
     };
   });
 }
@@ -147,6 +157,47 @@ export async function listarSolicitacoesPendentes(executor, ctx, campusId) {
   validar(uuid('Campus'), campusId);
   if (!dominio.podeDecidirSolicitacao(ctx.atribuicoes, campusId)) throw new ErroProibido();
   return comContexto(executor, escopoDe(ctx), (db) => repo.listarSolicitacoesPendentes(db, campusId));
+}
+
+// Campi em que o usuário decide solicitações (null = todos, para o admin institucional).
+function campiQueDecide(ctx) {
+  if (dominio.ehAdminInstitucional(ctx.atribuicoes)) return null;
+  return [...new Set(ctx.atribuicoes.filter((a) => a.papel === 'ADMIN_CAMPUS' && !a.revogada_em).map((a) => a.campus_id))];
+}
+
+// RF-003: todas as solicitações pendentes que o usuário pode decidir.
+export async function listarSolicitacoesDecidiveis(executor, ctx) {
+  const campi = campiQueDecide(ctx);
+  if (campi && campi.length === 0) throw new ErroProibido();
+  return comContexto(executor, escopoDe(ctx), (db) =>
+    repo.listarPendentesDecidiveis(db, { campi: campi ?? [], todos: campi === null, exceto: ctx.usuario.id }));
+}
+
+// RF-003: detalhe de uma solicitação para decisão (fora do escopo: 404).
+export async function obterSolicitacaoParaDecisao(executor, ctx, solicitacaoId) {
+  validar(uuid('Solicitação'), solicitacaoId);
+  return comContexto(executor, escopoDe(ctx), async (db) => {
+    const s = await repo.buscarSolicitacaoDetalhada(db, solicitacaoId);
+    if (!s || s.usuario_id === ctx.usuario.id) throw new ErroNaoEncontrado();
+    if (!dominio.podeDecidirSolicitacao(ctx.atribuicoes, s.campus_id)) throw new ErroProibido();
+    return s;
+  });
+}
+
+// RF-004: equipe do campus (servidores e papéis) para quem administra o campus.
+export async function equipeDoCampus(executor, ctx, campusId) {
+  validar(uuid('Campus'), campusId);
+  if (!dominio.podeDecidirSolicitacao(ctx.atribuicoes, campusId)) throw new ErroNaoEncontrado();
+  return comContexto(executor, escopoDe(ctx), async (db) => {
+    const campus = await repo.buscarCampus(db, campusId);
+    if (!campus) throw new ErroNaoEncontrado();
+    return {
+      campus,
+      membros: await repo.listarEquipe(db, campusId),
+      podeConcederOperador: dominio.podeConcederPapel(ctx.atribuicoes, 'OPERADOR', campusId),
+      podeConcederAdminCampus: dominio.podeConcederPapel(ctx.atribuicoes, 'ADMIN_CAMPUS', campusId),
+    };
+  });
 }
 
 const esquemaDecisao = z.discriminatedUnion('aprovar', [
@@ -206,6 +257,10 @@ export async function concederPapel(executor, ctx, entrada) {
     const alvo = await repo.buscarUsuario(db, e.usuarioId);
     if (!alvo || !alvo.ativo || alvo.tipo !== 'SERVIDOR') throw new ErroValidacao('Usuário inválido para receber papéis.');
     if (e.campusId && !(await repo.buscarCampusAtivo(db, e.campusId))) throw new ErroValidacao('Campus inválido.');
+    // D-18: papel de campus só para quem já é da equipe do campus (entrou por solicitação aprovada).
+    if (e.campusId && !(await repo.ehMembroDoCampus(db, e.usuarioId, e.campusId))) {
+      throw new ErroValidacao('O servidor precisa ter acesso aprovado neste campus antes de receber outro papel.');
+    }
     const a = await repo.inserirAtribuicaoSeAusente(db, {
       usuarioId: e.usuarioId, papel: e.papel, campusId: e.campusId, concedidaPor: ctx.usuario.id,
     });

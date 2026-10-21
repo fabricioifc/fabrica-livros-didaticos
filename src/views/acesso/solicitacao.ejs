@@ -1,0 +1,38 @@
+<%- include('../parciais/topo') %>
+<p><a href="/acesso/solicitacoes">Voltar às solicitações</a></p>
+<h1>Analisar solicitação</h1>
+<dl>
+  <dt>Servidor</dt><dd><%= s.nome %></dd>
+  <dt>E-mail</dt><dd><%= s.email %></dd>
+  <dt>Campus solicitado</dt><dd><%= s.campus %></dd>
+  <dt>Solicitado em</dt><dd><%= new Date(s.solicitada_em).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }) %></dd>
+</dl>
+<p>Confira se o servidor trabalha neste campus antes de aprovar.</p>
+
+<h2>Aprovar</h2>
+<form method="post" action="/acesso/solicitacoes/<%= s.id %>/aprovar">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <p>Ao aprovar, o servidor recebe o perfil de <strong>Consulta</strong> no campus.</p>
+  <%# Checkbox: https://www.gov.br/ds/components/checkbox (exemplo checkbox-default, core 3.7.0). %>
+  <div class="br-checkbox">
+    <input id="operador" name="operador" type="checkbox" value="sim">
+    <label for="operador">Conceder também <strong>Atendimento</strong> (registrar entregas e devoluções)</label>
+  </div>
+  <button class="br-button primary mt-3" type="submit">Aprovar acesso</button>
+</form>
+
+<h2 class="mt-5">Recusar</h2>
+<% if (erro) { %>
+  <%- include('../parciais/mensagem', { tipo: 'danger', titulo: erro, corpo: null }) %>
+<% } %>
+<form method="post" action="/acesso/solicitacoes/<%= s.id %>/recusar">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <%# Textarea: https://www.gov.br/ds/components/textarea (exemplo textarea-default, core 3.7.0). %>
+  <div class="br-textarea">
+    <label for="motivo">Motivo da recusa (obrigatório)</label>
+    <textarea id="motivo" name="motivo" required maxlength="500" aria-describedby="motivo-ajuda"><%= motivo %></textarea>
+    <p class="text-base mt-1" id="motivo-ajuda">O servidor verá este motivo e poderá solicitar novamente.</p>
+  </div>
+  <button class="br-button secondary mt-3" type="submit">Recusar solicitação</button>
+</form>
+<%- include('../parciais/rodape') %>

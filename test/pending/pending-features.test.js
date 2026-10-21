@@ -20,7 +20,6 @@ describe('PENDENTE — isolamento entre campi (obrigatório; AGENTS.md seção 1
 
 describe('PENDENTE — autenticação, sessão e permissões', () => {
   test.todo('callback OIDC com provedor real: assinatura, emissor, audiência, nonce e PKCE do ID token (hoje: openid-client + teste manual; os testes de rota usam provedor falso)');
-  test.todo('tela de aprovação de solicitações pelo admin do campus (RF-003 via HTTP)');
   test.todo('matriz de permissões AGENTS.md 6.2 testada por ação × papel × escopo');
   test.todo('Consulta e Estudante não preparam entrega nem por requisição direta (CA-040.7)');
   test.todo('estudante vê só os próprios dados e não tem ação de escrita (CA-064.2, CA-064.3)');

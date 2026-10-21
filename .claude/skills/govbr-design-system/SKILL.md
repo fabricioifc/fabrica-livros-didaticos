@@ -117,6 +117,7 @@ Regras:
 
 Fontes: https://www.gov.br/ds/acessibilidade, aba **Acessibilidade** de cada componente, guias "Acessibilidade no Código HTML" e "Uso do WAI-ARIA". Meta do projeto: **WCAG 2.1 AA / eMAG**.
 
+- **Texto só para leitor de tela:** o `@govbr-ds/core` 3.7.0 **não define** a classe `sr-only`, embora alguns exemplos oficiais (breadcrumb, input) a usem; sem CSS, o texto fica visível. Prefira `aria-label` começando pelo texto visível (ex.: botão "Remover" com `aria-label="Remover Atendimento de Ana"`). Confira de novo ao atualizar o pacote.
 - **HTML semântico primeiro**: `header`, `nav`, `main`, `footer`, `h1`–`h6` em ordem, `button` para ações, `a` para navegação, `table` com `th`/`scope`/`caption` para dados. ARIA só quando o HTML nativo não resolve — e conforme a documentação do componente.
 - **Um `h1` por página**; `<html lang="pt-BR">`; `<title>` único e descritivo por página.
 - **Skip Link** para o conteúdo principal em todas as páginas.

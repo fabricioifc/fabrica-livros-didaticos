@@ -3,8 +3,8 @@ import { criarApp } from '../../src/app.js';
 import { carregarConfig } from '../../src/config/index.js';
 import { resolveTestDatabaseUrl } from './test-db.js';
 
-export const configDeTeste = () =>
-  carregarConfig({ NODE_ENV: 'test', DATABASE_URL: resolveTestDatabaseUrl(), APP_URL: 'http://localhost:3000', SESSION_SECRET: 'segredo-de-teste-com-mais-de-32-caracteres' });
+export const configDeTeste = (extra = {}) =>
+  carregarConfig({ NODE_ENV: 'test', DATABASE_URL: resolveTestDatabaseUrl(), APP_URL: 'http://localhost:3000', SESSION_SECRET: 'segredo-de-teste-com-mais-de-32-caracteres', ...extra });
 
 // Provedor falso: substitui só o Google; o restante do fluxo (sessão, serviço, banco) é o real.
 export function provedorFalso() {
@@ -25,8 +25,8 @@ export function provedorFalso() {
   };
 }
 
-export async function iniciarServidor({ pool, provedor }) {
-  const servidor = criarApp({ pool, config: configDeTeste(), provedor }).listen(0, '127.0.0.1');
+export async function iniciarServidor({ pool, provedor, env = {} }) {
+  const servidor = criarApp({ pool, config: configDeTeste(env), provedor }).listen(0, '127.0.0.1');
   await new Promise((ok) => servidor.once('listening', ok));
   return { url: `http://127.0.0.1:${servidor.address().port}`, fechar: () => new Promise((ok) => servidor.close(ok)) };
 }

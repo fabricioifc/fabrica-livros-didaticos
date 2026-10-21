@@ -2,8 +2,26 @@
 // Toda autorização é feita no serviço; as rotas só traduzem HTTP <-> casos de uso.
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
-import { ErroAplicacao, ErroNaoAutenticado } from '../../infra/erros.js';
+import { ErroAplicacao, ErroNaoAutenticado, ErroNaoEncontrado, ErroProibido } from '../../infra/erros.js';
 import * as acesso from './servico.js';
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// Identificador malformado na URL é tratado como inexistente (404), sem detalhes.
+const idDaUrl = (valor) => {
+  if (!UUID.test(valor)) throw new ErroNaoEncontrado();
+  return valor;
+};
+
+// Áreas de servidor: sem sessão volta para o início; estudante é proibido (CA-006.2).
+function exigirServidor(req, res, next) {
+  if (!req.contexto) return res.redirect(303, '/');
+  if (req.contexto.usuario.tipo !== 'SERVIDOR') return next(new ErroProibido());
+  next();
+}
+
+// Mensagem de resultado exibida uma única vez após um redirecionamento (padrão POST → GET).
+const avisar = (req, tipo, titulo, corpo = null) => { req.session.aviso = { tipo, titulo, corpo }; };
 
 const regenerar = (req) => new Promise((ok, falha) => req.session.regenerate((e) => (e ? falha(e) : ok())));
 const salvar = (req) => new Promise((ok, falha) => req.session.save((e) => (e ? falha(e) : ok())));
@@ -31,7 +49,17 @@ export function carregarUsuario({ pool }) {
 
 export function rotasDeAcesso({ pool, config, provedor }) {
   const r = Router();
-  const limiteLogin = rateLimit({ windowMs: 15 * 60 * 1000, limit: 30, standardHeaders: 'draft-8', legacyHeaders: false });
+  r.use((req, res, next) => {
+    res.locals.aviso = req.session?.aviso ?? null;
+    if (req.session?.aviso && req.method === 'GET') delete req.session.aviso;
+    next();
+  });
+  // Contadores separados para início e retorno do login (um não consome o limite do outro).
+  const limitador = () => rateLimit({
+    windowMs: 15 * 60 * 1000, limit: config.limiteLogin15Min ?? 300, standardHeaders: 'draft-8', legacyHeaders: false,
+  });
+  const limiteInicioLogin = limitador();
+  const limiteRetornoLogin = limitador();
 
   r.get('/', async (req, res, next) => {
     try {
@@ -55,7 +83,7 @@ export function rotasDeAcesso({ pool, config, provedor }) {
     }
   });
 
-  r.get('/auth/login', limiteLogin, async (req, res, next) => {
+  r.get('/auth/login', limiteInicioLogin, async (req, res, next) => {
     try {
       if (!provedor) return res.redirect(303, '/');
       const { url, verificacao } = await provedor.iniciarLogin();
@@ -67,7 +95,7 @@ export function rotasDeAcesso({ pool, config, provedor }) {
     }
   });
 
-  r.get('/auth/callback', limiteLogin, async (req, res, next) => {
+  r.get('/auth/callback', limiteRetornoLogin, async (req, res, next) => {
     const verificacao = req.session?.oidc;
     if (!provedor || !verificacao) return res.redirect(303, '/');
     delete req.session.oidc; // uso único
@@ -109,6 +137,95 @@ export function rotasDeAcesso({ pool, config, provedor }) {
         return res.status(422).render('acesso/escolher-campus', {
           titulo: 'Escolha seu campus', campi: painel.campiAtivos, recusa: null, erro: 'Selecione um dos campi da lista.',
         });
+      }
+      next(err);
+    }
+  });
+
+  // ===== RF-003: decisão sobre solicitações =====
+  r.get('/acesso/solicitacoes', exigirServidor, async (req, res, next) => {
+    try {
+      const solicitacoes = await acesso.listarSolicitacoesDecidiveis(pool, req.contexto);
+      res.render('acesso/solicitacoes', { titulo: 'Solicitações de acesso', solicitacoes });
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  r.get('/acesso/solicitacoes/:id', exigirServidor, async (req, res, next) => {
+    try {
+      const s = await acesso.obterSolicitacaoParaDecisao(pool, req.contexto, idDaUrl(req.params.id));
+      res.render('acesso/solicitacao', { titulo: 'Analisar solicitação', s, erro: null, motivo: '' });
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  r.post('/acesso/solicitacoes/:id/aprovar', exigirServidor, async (req, res, next) => {
+    try {
+      const { solicitacao } = await acesso.decidirSolicitacao(pool, req.contexto, {
+        solicitacaoId: idDaUrl(req.params.id), aprovar: true, concederOperador: req.body?.operador === 'sim',
+      });
+      avisar(req, 'success', 'Acesso aprovado.', solicitacao.status === 'APROVADA' ? 'O servidor já pode usar o sistema.' : null);
+      res.redirect(303, '/acesso/solicitacoes');
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  r.post('/acesso/solicitacoes/:id/recusar', exigirServidor, async (req, res, next) => {
+    const motivo = String(req.body?.motivo ?? '');
+    try {
+      await acesso.decidirSolicitacao(pool, req.contexto, { solicitacaoId: idDaUrl(req.params.id), aprovar: false, motivo });
+      avisar(req, 'info', 'Solicitação recusada.', 'O servidor verá o motivo e poderá solicitar novamente.');
+      res.redirect(303, '/acesso/solicitacoes');
+    } catch (err) {
+      if (err.codigo !== 'VALIDACAO') return next(err);
+      try {
+        const s = await acesso.obterSolicitacaoParaDecisao(pool, req.contexto, req.params.id);
+        res.status(422).render('acesso/solicitacao', { titulo: 'Analisar solicitação', s, erro: err.message, motivo });
+      } catch (err2) {
+        next(err2);
+      }
+    }
+  });
+
+  // ===== RF-004: equipe do campus e papéis =====
+  r.get('/acesso/campi/:campusId/equipe', exigirServidor, async (req, res, next) => {
+    try {
+      const equipe = await acesso.equipeDoCampus(pool, req.contexto, idDaUrl(req.params.campusId));
+      res.render('acesso/equipe', { titulo: `Equipe — ${equipe.campus.nome_curto}`, ...equipe, eu: req.contexto.usuario.id });
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  r.post('/acesso/campi/:campusId/equipe/papeis', exigirServidor, async (req, res, next) => {
+    const campusId = req.params.campusId;
+    try {
+      await acesso.concederPapel(pool, req.contexto, {
+        usuarioId: String(req.body?.usuarioId ?? ''), papel: String(req.body?.papel ?? ''), campusId: idDaUrl(campusId),
+      });
+      avisar(req, 'success', 'Papel concedido.');
+      res.redirect(303, `/acesso/campi/${campusId}/equipe`);
+    } catch (err) {
+      if (err.codigo === 'PAPEL_JA_ATRIBUIDO' || err.codigo === 'VALIDACAO') {
+        avisar(req, 'warning', err.message);
+        return res.redirect(303, `/acesso/campi/${campusId}/equipe`);
+      }
+      next(err);
+    }
+  });
+
+  r.post('/acesso/atribuicoes/:id/revogar', exigirServidor, async (req, res, next) => {
+    try {
+      const a = await acesso.revogarAtribuicao(pool, req.contexto, idDaUrl(req.params.id));
+      avisar(req, 'success', 'Papel removido.');
+      res.redirect(303, a.campus_id ? `/acesso/campi/${a.campus_id}/equipe` : '/');
+    } catch (err) {
+      if (err.codigo === 'ULTIMO_ADMIN' || err.codigo === 'JA_REVOGADA') {
+        avisar(req, 'warning', err.message);
+        return res.redirect(303, '/');
       }
       next(err);
     }

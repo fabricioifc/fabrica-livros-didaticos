@@ -164,6 +164,54 @@ export async function registrarDecisao(db, id, { status, decididaPor, motivo }) 
   return rows[0] ?? null;
 }
 
+// Pendentes dos campi indicados (ou de todos, para o escopo institucional), sem as do próprio usuário.
+export async function listarPendentesDecidiveis(db, { campi, todos, exceto }) {
+  const { rows } = await db.query(
+    `SELECT s.id, s.solicitada_em, c.id AS campus_id, c.nome_curto AS campus, u.nome, u.email
+     FROM solicitacao_acesso s JOIN campus c ON c.id = s.campus_id JOIN usuario u ON u.id = s.usuario_id
+     WHERE s.status = 'PENDENTE' AND (s.campus_id = ANY($1) OR $2) AND s.usuario_id <> $3
+     ORDER BY s.solicitada_em`,
+    [campi, todos, exceto],
+  );
+  return rows;
+}
+
+export async function buscarSolicitacaoDetalhada(db, id) {
+  const { rows } = await db.query(
+    `SELECT s.id, s.status, s.solicitada_em, s.usuario_id, s.campus_id, c.nome_curto AS campus, u.nome, u.email
+     FROM solicitacao_acesso s JOIN campus c ON c.id = s.campus_id JOIN usuario u ON u.id = s.usuario_id
+     WHERE s.id = $1`,
+    [id],
+  );
+  return rows[0] ?? null;
+}
+
+export async function ehMembroDoCampus(db, usuarioId, campusId) {
+  const { rows } = await db.query(
+    'SELECT EXISTS (SELECT 1 FROM atribuicao WHERE usuario_id = $1 AND campus_id = $2 AND revogada_em IS NULL) AS membro',
+    [usuarioId, campusId],
+  );
+  return rows[0].membro;
+}
+
+export async function buscarCampus(db, id) {
+  const { rows } = await db.query('SELECT id, nome_curto, nome_oficial, ativo FROM campus WHERE id = $1', [id]);
+  return rows[0] ?? null;
+}
+
+// Servidores com atribuição vigente no campus e os respectivos papéis.
+export async function listarEquipe(db, campusId) {
+  const { rows } = await db.query(
+    `SELECT u.id AS usuario_id, u.nome, u.email, u.ativo,
+            json_agg(json_build_object('id', a.id, 'papel', a.papel) ORDER BY a.papel) AS atribuicoes
+     FROM atribuicao a JOIN usuario u ON u.id = a.usuario_id
+     WHERE a.campus_id = $1 AND a.revogada_em IS NULL
+     GROUP BY u.id ORDER BY u.nome`,
+    [campusId],
+  );
+  return rows;
+}
+
 export async function listarSolicitacoesPendentes(db, campusId) {
   const { rows } = await db.query(
     `SELECT s.id, s.campus_id, s.solicitada_em, u.id AS usuario_id, u.nome, u.email
