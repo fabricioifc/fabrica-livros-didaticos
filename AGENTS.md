@@ -522,7 +522,7 @@ CREATE TABLE devolucao_item (
   resultado text NOT NULL CHECK (resultado IN ('DEVOLVIDO','DANIFICADO','PERDIDO')),
   justificativa text,                              -- RN-66: obrigatória para danificado/perdido
   observacao text,
-  CHECK (resultado = 'DEVOLVIDO' OR length(trim(justificativa)) > 0),
+  CHECK (resultado = 'DEVOLVIDO' OR COALESCE(length(trim(justificativa)), 0) > 0),   -- COALESCE: CHECK NULL seria aceito
   FOREIGN KEY (campus_id, devolucao_id) REFERENCES devolucao(campus_id, id)
 );
 -- trigger: SUM(devolucao_item.quantidade) por entrega_item <= entrega_item.quantidade
@@ -868,6 +868,7 @@ Uma funcionalidade só está concluída quando:
 | D-14 | 2026-10-21 | Sem transferência de livros entre campi; devolução só no campus da entrega (Q-12). | Nenhum; se surgir a necessidade, exigirá novo fluxo e decisão. |
 | D-15 | 2026-10-21 | Estudante identificado no atendimento por matrícula: QR code com JWT assinado pelo servidor ou digitação; invalidação por `estudante.qr_versao` (DV-03). | Nenhum. |
 | D-16 | 2026-10-21 | Perda/dano apenas com justificativa; operador estorna os próprios registros; sem expiração de entrega preparada (DV-04, DV-09, Q-09). | Nenhum. |
+| D-17 | 2026-10-21 | Implementação do acesso: toda transação da aplicação roda com `SET LOCAL ROLE livros_app` (sem `BYPASSRLS`); o usuário de login da aplicação é membro de `livros_app`. `BOOTSTRAP_ADMIN_EMAILS` só cria administrador enquanto não houver **nenhum** administrador institucional ativo, para não virar acesso permanente. Ninguém decide a própria solicitação de acesso. | Nenhum. |
 
 ---
 

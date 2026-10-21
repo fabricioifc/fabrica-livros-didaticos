@@ -1,7 +1,7 @@
 // BACKLOG DE TESTES — funcionalidades ainda NÃO implementadas.
 // Aparecem como "todo" na saída do node:test; NÃO contam como aprovados.
 // Ao implementar a funcionalidade, mova o teste para test/unit ou test/integration
-// e escreva as asserções reais. IDs: docs/business-rules.md (RN) e docs/requirements.md (CA).
+// e escreva as asserções reais. Já implementados: módulo de acesso (test/integration/acesso-*.test.js). IDs: docs/business-rules.md (RN) e docs/requirements.md (CA).
 import { describe, test } from 'node:test';
 
 describe('PENDENTE — isolamento entre campi (obrigatório; AGENTS.md seção 13)', () => {
@@ -10,8 +10,7 @@ describe('PENDENTE — isolamento entre campi (obrigatório; AGENTS.md seção 1
   test.todo('gravar com campus_id do campus B por usuário do campus A → 403 e auditoria (CA-095.2)');
   test.todo('trocar campus de trabalho, campo oculto ou URL para campus não atribuído → 403 (CA-095.3)');
   test.todo('entrega do campus A referenciando vínculo do campus B é recusada também pelo banco (FK composta)');
-  test.todo('RLS: com app.campi = {A}, SELECT em dados de B retorna 0 linhas e INSERT com B falha');
-  test.todo('pool: requisições sequenciais de campi diferentes na mesma conexão não herdam contexto');
+  test.todo('RLS das tabelas de estoque, estudantes, entregas e devoluções (as do módulo de acesso já são testadas)');
   test.todo('relatórios, pendências, históricos e documentos respeitam o escopo do usuário (CA-070.2)');
   test.todo('exportação CSV respeita filtros e escopo (CA-071.1)');
   test.todo('catálogo é visível a todos, mas estoque e movimentações de outro campus não (RN-73, CA-027.2)');
@@ -21,11 +20,10 @@ describe('PENDENTE — isolamento entre campi (obrigatório; AGENTS.md seção 1
 
 describe('PENDENTE — autenticação, sessão e permissões', () => {
   test.todo('rotas protegidas sem sessão redirecionam ao login (RNF-001)');
-  test.todo('domínio não permitido, domínio parecido e e-mail não verificado são recusados (CA-001.1 a CA-001.3)');
-  test.todo('servidor com solicitação pendente não vê dados; campus declarado não concede acesso (CA-002.1, CA-002.2)');
-  test.todo('admin do campus A não decide solicitações do campus B (CA-003.3)');
-  test.todo('revogação vale na próxima requisição (CA-004.1); último admin institucional não pode ser removido (CA-004.2)');
-  test.todo('usuário desativado e sessão encerrada não acessam nada (CA-008.1)');
+  test.todo('callback OIDC valida o ID token (assinatura, emissor, audiência, nonce, PKCE) antes de classificar o domínio (RF-001)');
+  test.todo('rotas: servidor com solicitação pendente só vê a tela de aguardo (CA-002.1)');
+  test.todo('rotas: revogação vale na próxima requisição HTTP, sem esperar o fim da sessão (CA-004.1)');
+  test.todo('sessão encerrada (logout) não pode ser reutilizada (CA-008.1)');
   test.todo('matriz de permissões AGENTS.md 6.2 testada por ação × papel × escopo');
   test.todo('Consulta e Estudante não preparam entrega nem por requisição direta (CA-040.7)');
   test.todo('estudante vê só os próprios dados e não tem ação de escrita (CA-064.2, CA-064.3)');
