@@ -1,0 +1,9 @@
+# Fim de linha LF no repositório e na cópia de trabalho (scripts usados em Docker/Linux)
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary

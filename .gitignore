@@ -1,0 +1,38 @@
+# Dependências
+node_modules/
+
+# Variáveis de ambiente e segredos (versionar apenas .env.example)
+.env
+.env.*
+!.env.example
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Testes e cobertura
+coverage/
+test-results/
+playwright-report/
+
+# Builds e arquivos gerados
+dist/
+build/
+public/vendor/
+
+# Dados locais (backups, dumps, volumes)
+*.dump
+*.sql.gz
+backups/
+data/
+
+# Configurações locais de ferramentas
+.claude/settings.local.json
+.vscode/
+.idea/
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+desktop.ini
