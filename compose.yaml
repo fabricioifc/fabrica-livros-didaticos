@@ -1,0 +1,54 @@
+# Ambiente de DESENVOLVIMENTO local (npm run dev:up). Não usar em produção.
+# - Credenciais abaixo são apenas para esta máquina; não reutilize em outro ambiente.
+# - Somente dados fictícios (AGENTS.md, regra 15).
+name: livros-didaticos-dev
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: livros_dev
+      POSTGRES_USER: livros          # dono do banco: usado só para migrações e seeds
+      POSTGRES_PASSWORD: livros
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/dev/initdb:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "127.0.0.1:55433:5432"     # acesso local opcional (ex.: cliente SQL)
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U livros -d livros_dev"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  app:
+    image: node:24-alpine
+    working_dir: /app
+    # Instala dependências, aplica migrações e dados fictícios, e inicia com recarga automática.
+    command: sh -c "npm install --no-audit --no-fund && npm run db:migrate && npm run db:seed -- --dev && npm run dev"
+    environment:
+      NODE_ENV: development
+      HOST: 0.0.0.0
+      PORT: 3000
+      # A aplicação usa um login que só tem os privilégios do papel livros_app (sujeito a RLS).
+      DATABASE_URL: postgres://livros_app_dev:livros_app_dev@db:5432/livros_dev
+      DATABASE_MIGRATION_URL: postgres://livros:livros@db:5432/livros_dev
+      BOOTSTRAP_ADMIN_EMAILS: ${BOOTSTRAP_ADMIN_EMAILS:-}
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules   # dependências do Linux, separadas das do Windows
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/saude >/dev/null || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 120s
+
+volumes:
+  pgdata:
+  node_modules:

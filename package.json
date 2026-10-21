@@ -13,12 +13,23 @@
     "test:integration": "node --test \"test/integration/**/*.test.js\"",
     "test:pending": "node --test \"test/pending/**/*.test.js\"",
     "test:coverage": "node --test --experimental-test-coverage --test-coverage-include=\"src/**\" --test-coverage-include=\"test/helpers/**\" --test-coverage-exclude=\"**/*.test.js\" \"test/**/*.test.js\"",
+    "start": "node src/server.js",
+    "dev": "nodemon --legacy-watch --watch src --ext js,json src/server.js",
+    "dev:up": "docker compose up -d",
+    "dev:logs": "docker compose logs -f app",
+    "dev:down": "docker compose down",
+    "dev:reset": "docker compose down -v",
     "db:migrate": "node src/infra/db/cli-migrar.js",
+    "db:seed": "node src/infra/db/cli-seed.js",
     "db:test:up": "docker compose -f docker/compose.test.yml up -d --wait",
     "db:test:down": "docker compose -f docker/compose.test.yml down"
   },
   "dependencies": {
+    "express": "5.2.1",
     "pg": "8.23.1",
     "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "nodemon": "3.1.14"
   }
 }

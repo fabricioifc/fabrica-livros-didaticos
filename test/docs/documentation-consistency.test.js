@@ -13,6 +13,7 @@ const DOCS = [
   'docs/business-rules.md',
   'docs/requirements.md',
   'docs/testing.md',
+  'README.md',
   '.claude/skills/govbr-design-system/SKILL.md',
 ];
 const ler = (arquivo) => readFileSync(join(RAIZ, arquivo), 'utf8');

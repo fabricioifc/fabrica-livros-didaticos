@@ -759,6 +759,7 @@ Internet ──HTTPS──> Caddy (TLS automático) ──> app (Node, container
 - `docker-compose.yml` com serviços `caddy`, `app`, `db`; banco **não** exposto para a internet.
 - Domínio neutro (ex.: `livros.<dominio>`), **sem** referência a Fraiburgo, para não criar dependência do primeiro campus.
 - Ambientes: **local** (compose de desenvolvimento), **homologação** (opcional, na mesma VPS, banco separado) e **produção**. Todos com dados fictícios até DP-01.
+- **Desenvolvimento local:** `compose.yaml` na raiz (`npm run dev:up`), descrito no [`README.md`](README.md). O login da aplicação (`livros_app_dev`) só tem os privilégios de `livros_app`, como em produção; testes usam outro banco (`docker/compose.test.yml`).
 
 ### 12.2 CI/CD (GitHub Actions)
 

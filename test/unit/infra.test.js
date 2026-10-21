@@ -22,6 +22,14 @@ describe('carregarConfig', () => {
     assert.throws(() => carregarConfig({ DATABASE_URL: 'x', BOOTSTRAP_ADMIN_EMAILS: 'não-é-email' }), /BOOTSTRAP_ADMIN_EMAILS/);
   });
 
+  test('porta e host têm padrão seguro (só local) e porta inválida é recusada', () => {
+    const c = carregarConfig({ DATABASE_URL: 'x' });
+    assert.equal(c.porta, 3000);
+    assert.equal(c.host, '127.0.0.1');
+    assert.equal(carregarConfig({ DATABASE_URL: 'x', PORT: '8080', HOST: '0.0.0.0' }).porta, 8080);
+    assert.throws(() => carregarConfig({ DATABASE_URL: 'x', PORT: '70000' }), /PORT/);
+  });
+
   test('NODE_ENV fora da lista é recusado', () => {
     assert.throws(() => carregarConfig({ DATABASE_URL: 'x', NODE_ENV: 'staging' }), /NODE_ENV/);
   });

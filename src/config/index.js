@@ -12,6 +12,8 @@ const esquema = z.object({
   DATABASE_URL: z.string().min(1, 'DATABASE_URL é obrigatória'),
   DATABASE_MIGRATION_URL: z.string().min(1).optional(),
   BOOTSTRAP_ADMIN_EMAILS: listaDeEmails,
+  PORT: z.coerce.number().int().min(1).max(65535).default(3000),
+  HOST: z.string().min(1).default('127.0.0.1'),
 });
 
 export function carregarConfig(env = process.env) {
@@ -26,5 +28,7 @@ export function carregarConfig(env = process.env) {
     bancoUrl: c.DATABASE_URL,
     bancoMigracaoUrl: c.DATABASE_MIGRATION_URL ?? c.DATABASE_URL,
     emailsAdminInicial: c.BOOTSTRAP_ADMIN_EMAILS,
+    porta: c.PORT,
+    host: c.HOST,
   };
 }
