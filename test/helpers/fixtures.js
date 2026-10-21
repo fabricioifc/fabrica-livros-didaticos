@@ -21,7 +21,7 @@ export async function criarDominios(db) {
 export async function criarCampus(db, { nome = 'Campus Alfa', ativo = true } = {}) {
   const { rows } = await db.query(
     `INSERT INTO campus (codigo, nome_oficial, nome_curto, ativo) VALUES ($1, $2, $3, $4) RETURNING id, codigo`,
-    [`T-${sufixo()}`, `Instituto Fictício – ${nome}`, nome, ativo],
+    [`T${sufixo().toUpperCase()}`, `Instituto Fictício – ${nome}`, nome, ativo],
   );
   await db.query('INSERT INTO campus_configuracao (campus_id, setor_responsavel) VALUES ($1, $2)', [rows[0].id, 'Setor Fictício']);
   return rows[0];
@@ -55,6 +55,26 @@ export async function atribuir(db, usuarioId, papel, campusId = null) {
     [usuarioId, papel, campusId],
   );
   return rows[0];
+}
+
+// Bloqueio usado pelo serviço ao contar administradores institucionais (RF-005, CA-004.2).
+// Testes que criam ou revogam admins institucionais devem tomá-lo para não interferir entre si.
+export const travarAdminsInstitucionais = (db) => db.query("SELECT pg_advisory_xact_lock(hashtext('acesso.admin_institucional'))");
+
+// Admin institucional gravado de fato (fora de withRollback), serializado com os testes de RF-005.
+export async function criarAdminInstitucionalConfirmado(pool, usuarioId) {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await travarAdminsInstitucionais(client);
+    await client.query("INSERT INTO atribuicao (usuario_id, papel) VALUES ($1, 'ADMIN_INSTITUCIONAL')", [usuarioId]);
+    await client.query('COMMIT');
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
 }
 
 export async function atribuicoesDe(db, usuarioId) {

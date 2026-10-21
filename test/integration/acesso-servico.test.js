@@ -4,7 +4,7 @@ import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { usarBancoMigrado } from '../helpers/banco-migrado.js';
 import { withRollback } from '../helpers/test-db.js';
-import { cenarioDoisCampi, contextoDe, criarUsuario, atribuir, atribuicoesDe } from '../helpers/fixtures.js';
+import { cenarioDoisCampi, contextoDe, criarUsuario, atribuir, atribuicoesDe, travarAdminsInstitucionais } from '../helpers/fixtures.js';
 import * as acesso from '../../src/modulos/acesso/servico.js';
 
 const banco = usarBancoMigrado();
@@ -68,7 +68,8 @@ describe('RF-001 — login com conta institucional', () => {
 
 describe('RF-005 — primeiro administrador institucional', () => {
   // Desativa temporariamente (dentro da transação) os admins existentes para simular uma instalação nova.
-  const instalacaoNova = (db) => db.query("UPDATE atribuicao SET revogada_em = now(), revogada_por = usuario_id WHERE papel = 'ADMIN_INSTITUCIONAL' AND revogada_em IS NULL");
+  // Toma o mesmo bloqueio do serviço antes de revogar, para não correr com admins criados por outros testes.
+  const instalacaoNova = async (db) => (await travarAdminsInstitucionais(db), db.query("UPDATE atribuicao SET revogada_em = now(), revogada_por = usuario_id WHERE papel = 'ADMIN_INSTITUCIONAL' AND revogada_em IS NULL"));
 
   test('CA-005.1: e-mail configurado vira admin institucional quando ainda não há nenhum', emTransacao(async (db) => {
     const { dominios } = await cenarioDoisCampi(db);
@@ -215,7 +216,8 @@ describe('RF-004 — concessão e revogação de papéis', () => {
 
   test('CA-004.2: o último admin institucional não pode ser removido; havendo dois, pode', emTransacao(async (db) => {
     const c = await cenarioDoisCampi(db);
-    // Garante que, nesta transação, só existe o admin do cenário.
+    // Garante que, nesta transação, só existe o admin do cenário (com o bloqueio do serviço).
+    await travarAdminsInstitucionais(db);
     await db.query("UPDATE atribuicao SET revogada_em = now(), revogada_por = usuario_id WHERE papel = 'ADMIN_INSTITUCIONAL' AND revogada_em IS NULL AND usuario_id <> $1", [c.adminInst.id]);
     const ctx = await contextoDe(db, c.adminInst);
     const [unico] = ctx.atribuicoes;

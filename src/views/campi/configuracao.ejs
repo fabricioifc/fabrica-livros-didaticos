@@ -1,0 +1,42 @@
+<%- include('../parciais/topo') %>
+<p><a href="<%= podeAlterarCodigo ? '/campi' : '/' %>">Voltar</a></p>
+<h1>Configuração — <%= campus.nome_curto %></h1>
+<% if (!campus.ativo) { %>
+  <div class="mb-3"><%- include('../parciais/mensagem', { tipo: 'warning', titulo: 'Campus inativo.', corpo: 'Ele não aparece para novas solicitações de acesso.' }) %></div>
+<% } %>
+<% if (Object.keys(erros).length) { %>
+  <div class="mb-3"><%- include('../parciais/mensagem', { tipo: 'danger', titulo: 'Corrija os campos indicados.', corpo: null }) %></div>
+<% } %>
+<form method="post" action="/campi/<%= campus.id %>/configuracao" class="col-md-8 px-0">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+  <h2>Identificação</h2>
+  <% if (podeAlterarCodigo) { %>
+    <%- include('../parciais/campo', { id: 'codigo', nome: 'codigo', rotulo: 'Código', valor: campus.codigo, erro: erros.codigo, obrigatorio: true, maximo: 10 }) %>
+  <% } else { %>
+    <p><strong>Código:</strong> <%= campus.codigo %> <span class="text-down-01">(alterado só pela administração institucional)</span></p>
+  <% } %>
+  <%- include('../parciais/campo', { id: 'nomeOficial', nome: 'nomeOficial', rotulo: 'Nome oficial', valor: campus.nome_oficial, erro: erros.nomeOficial, obrigatorio: true, maximo: 200, ajuda: 'Como aparece nos documentos.' }) %>
+  <%- include('../parciais/campo', { id: 'nomeCurto', nome: 'nomeCurto', rotulo: 'Nome curto', valor: campus.nome_curto, erro: erros.nomeCurto, obrigatorio: true, maximo: 60 }) %>
+
+  <h2 class="mt-4">Endereço e contato</h2>
+  <p class="text-down-01">Aparecem nos termos e comprovantes. Documentos já emitidos não mudam.</p>
+  <%- include('../parciais/campo', { id: 'endereco', nome: 'endereco', rotulo: 'Endereço', valor: campus.endereco, erro: erros.endereco, maximo: 200, autocomplete: 'street-address' }) %>
+  <%- include('../parciais/campo', { id: 'cidade', nome: 'cidade', rotulo: 'Cidade', valor: campus.cidade, erro: erros.cidade, maximo: 100, autocomplete: 'address-level2' }) %>
+  <%- include('../parciais/campo', { id: 'uf', nome: 'uf', rotulo: 'UF', valor: campus.uf, erro: erros.uf, maximo: 2, ajuda: 'Duas letras (ex.: SC).' }) %>
+  <%- include('../parciais/campo', { id: 'cep', nome: 'cep', rotulo: 'CEP', valor: campus.cep, erro: erros.cep, maximo: 9, autocomplete: 'postal-code' }) %>
+  <%- include('../parciais/campo', { id: 'setorResponsavel', nome: 'setorResponsavel', rotulo: 'Setor responsável pelos livros', valor: campus.setor_responsavel, erro: erros.setorResponsavel, maximo: 100, ajuda: 'Ex.: Coordenação-Geral de Ensino (CGE).' }) %>
+  <%- include('../parciais/campo', { id: 'emailSetor', nome: 'emailSetor', rotulo: 'E-mail do setor', tipo: 'email', valor: campus.email_setor, erro: erros.emailSetor, maximo: 200 }) %>
+  <%- include('../parciais/campo', { id: 'telefone', nome: 'telefone', rotulo: 'Telefone do setor', tipo: 'tel', valor: campus.telefone, erro: erros.telefone, maximo: 30 }) %>
+
+  <h2 class="mt-4">Regras do campus</h2>
+  <%# Checkbox: https://www.gov.br/ds/components/checkbox (exemplo checkbox-default, core 3.7.0). %>
+  <div class="br-checkbox mb-3">
+    <input id="permiteEntregaComPendencia" name="permiteEntregaComPendencia" type="checkbox" value="sim" <%= campus.permite_entrega_com_pendencia ? 'checked' : '' %> aria-describedby="pendencia-ajuda">
+    <label for="permiteEntregaComPendencia">Permitir nova entrega a estudante com livro em atraso (com aviso)</label>
+  </div>
+  <p class="text-down-01" id="pendencia-ajuda">Se desmarcado, o sistema bloqueia a entrega enquanto houver pendência vencida (regra RN-21).</p>
+
+  <button class="br-button primary mt-3" type="submit">Salvar configuração</button>
+</form>
+<%- include('../parciais/rodape') %>

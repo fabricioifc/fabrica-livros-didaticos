@@ -8,11 +8,19 @@
 </ul>
 <% if (pendentes !== null) { %>
   <h2>Administração</h2>
-  <p><a class="br-button primary" href="/acesso/solicitacoes">Solicitações de acesso<% if (pendentes > 0) { %> (<%= pendentes %> aguardando)<% } %></a></p>
+  <p>
+    <a class="br-button primary mr-2 mb-1" href="/acesso/solicitacoes">Solicitações de acesso<% if (pendentes > 0) { %> (<%= pendentes %> aguardando)<% } %></a>
+    <% if (institucionais.includes('ADMIN_INSTITUCIONAL')) { %><a class="br-button secondary mb-1" href="/campi">Campi</a><% } %>
+  </p>
   <% if (campiAdministrados.length) { %>
-    <p class="mb-1">Equipe por campus:</p>
+    <p class="mb-1">Por campus:</p>
     <ul>
-      <% campiAdministrados.forEach((c) => { %><li><a href="/acesso/campi/<%= c.id %>/equipe"><%= c.nome %></a></li><% }) %>
+      <% campiAdministrados.forEach((c) => { %>
+        <li><strong><%= c.nome %>:</strong>
+          <a href="/acesso/campi/<%= c.id %>/equipe" aria-label="Equipe de <%= c.nome %>">equipe</a> ·
+          <a href="/campi/<%= c.id %>/configuracao" aria-label="Configuração de <%= c.nome %>">configuração</a>
+        </li>
+      <% }) %>
     </ul>
   <% } %>
 <% } %>

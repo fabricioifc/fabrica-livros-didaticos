@@ -1,0 +1,33 @@
+<%- include('../parciais/topo') %>
+<p><a href="/">Voltar ao início</a></p>
+<h1>Campi</h1>
+<p>Campi atendidos pelo sistema. Um campus desativado deixa de aparecer para novas solicitações de acesso; o histórico é mantido.</p>
+<p><a class="br-button primary" href="/campi/novo">Cadastrar campus</a></p>
+<%# Table: https://www.gov.br/ds/components/table (estrutura do exemplo table-irregular-1, core 3.7.0). %>
+<div class="br-table" title="Campi">
+  <div class="table-header">
+    <div class="top-bar"><div class="table-title">Campi (<%= campi.length %>)</div></div>
+  </div>
+  <table aria-label="Campi cadastrados">
+    <thead>
+      <tr><th scope="col">Código</th><th scope="col">Nome</th><th scope="col">Situação</th><th scope="col">Ações</th></tr>
+    </thead>
+    <tbody>
+      <% campi.forEach((c) => { %>
+        <tr>
+          <td><%= c.codigo %></td>
+          <td><%= c.nome_curto %><br><span class="text-down-01"><%= c.nome_oficial %></span></td>
+          <td><%= c.ativo ? 'Ativo' : 'Inativo' %></td>
+          <td>
+            <a class="br-button secondary small mb-1" href="/campi/<%= c.id %>/configuracao" aria-label="Configurar <%= c.nome_curto %>">Configurar</a>
+            <form method="post" action="/campi/<%= c.id %>/<%= c.ativo ? 'desativar' : 'ativar' %>" class="d-inline">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <button class="br-button secondary small mb-1" type="submit" aria-label="<%= c.ativo ? 'Desativar' : 'Ativar' %> <%= c.nome_curto %>"><%= c.ativo ? 'Desativar' : 'Ativar' %></button>
+            </form>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+<%- include('../parciais/rodape') %>

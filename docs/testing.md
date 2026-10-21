@@ -55,6 +55,9 @@ npm test
 | `test/integration/acesso-isolamento.test.js` | Tentativas de violar o isolamento **direto no banco** (RLS), imutabilidade e vazamento de contexto entre conexões |
 | `test/integration/rotas-acesso.test.js` | Rotas de ponta a ponta com sessão real: login, regeneração da sessão, state inválido, domínio recusado, XSS, CSRF, escolha de campus, revogação e desativação na hora, logout, estudante |
 | `test/integration/rotas-administracao.test.js` | RF-003/RF-004 pela interface: lista e decisão de solicitações, equipe e papéis, com tentativas por URL e formulário forjado (outro campus, sem CSRF, quem não é da equipe) |
+| `test/integration/campi-servico.test.js` | RF-010/RF-011: criação, situação e configuração de campi; reforço no banco (RLS e trigger da migração 004) |
+| `test/integration/rotas-campi.test.js` | RF-010/RF-011 pela interface, com tentativas de código forjado e campus de outro por URL |
+| `test/unit/campi-dominio.test.js` | Validação e normalização dos dados de campus |
 | `test/integration/app.test.js` | Servidor HTTP: `GET /saude` (inclusive com banco fora do ar) e 404 padrão |
 | `test/integration/test-database.test.js` | Versão e conexão do banco, desfazimento de transações |
 | `test/docs/` | Consistência da documentação e regressões de decisões revogadas |
@@ -78,11 +81,11 @@ npm test
 
 | Métrica | Quantidade |
 |---|---|
-| Aprovados | 134 |
+| Aprovados | 159 |
 | Falhos | 0 |
 | Ignorados (`skip`) | 0 |
 | Pendentes (`todo`, funcionalidades não implementadas) | 69 |
-| Total | 203 |
+| Total | 228 |
 
 Cobertura (`npm run test:coverage`), incluindo `test/helpers/`: 98,0% das linhas e 95,1% dos ramos; `servico.js` e `dominio.js` do acesso com 100% das linhas. Lacunas conhecidas:
 
@@ -100,6 +103,9 @@ Cobertura de linhas **não** prova correção: ela mostra o que foi executado, n
 | 2026-10-21 | `CHECK` da recusa de solicitação aceitava motivo `NULL` (`length(NULL)` é `NULL`, e `CHECK` nulo passa). O mesmo padrão estava no esboço de `devolucao_item` do AGENTS.md. | `COALESCE(length(trim(...)), 0) > 0` na migração 001 e no AGENTS.md; teste de regressão com `NULL`, vazio e só espaços. |
 
 ## Limitações conhecidas
+
+- **Falha intermitente não identificada (2026-10-21):** em uma execução da suíte, 1 teste falhou; a saída não foi preservada e a falha não se repetiu em 13 execuções seguidas. Suspeita: testes de rota gravam dados de fato e rodam em paralelo com outros arquivos. Se reaparecer, guarde a saída completa (`npm test > saida.txt 2>&1`) antes de rodar de novo.
+- Testes que criam ou revogam administradores institucionais gravados de fato devem usar `criarAdminInstitucionalConfirmado` / `travarAdminsInstitucionais` (fixtures), o mesmo bloqueio do serviço, para não interferir nos testes de RF-005.
 
 - A cobertura nativa do Node ainda é experimental (`--experimental-test-coverage`). Por padrão ela exclui arquivos em pastas `test/`; o script informa `--test-coverage-exclude` explicitamente.
 - O fluxo OIDC real (assinatura e validade do ID token) não é testado automaticamente: os testes de rota usam um provedor falso. Foi verificado o redirecionamento ao Google (PKCE, state, nonce) e o login real é testado manualmente.

@@ -1,0 +1,15 @@
+<%- include('../parciais/topo') %>
+<p><a href="/campi">Voltar aos campi</a></p>
+<h1>Cadastrar campus</h1>
+<% if (Object.keys(erros).length) { %>
+  <div class="mb-3"><%- include('../parciais/mensagem', { tipo: 'danger', titulo: 'Corrija os campos indicados.', corpo: null }) %></div>
+<% } %>
+<form method="post" action="/campi" class="col-md-8 px-0">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <%- include('../parciais/campo', { id: 'codigo', nome: 'codigo', rotulo: 'Código', valor: valores.codigo, erro: erros.codigo, obrigatorio: true, maximo: 10, ajuda: 'De 2 a 10 letras ou números (ex.: FRA). Identifica o campus de forma estável.' }) %>
+  <%- include('../parciais/campo', { id: 'nomeOficial', nome: 'nomeOficial', rotulo: 'Nome oficial', valor: valores.nomeOficial, erro: erros.nomeOficial, obrigatorio: true, maximo: 200, ajuda: 'Como aparece nos documentos.' }) %>
+  <%- include('../parciais/campo', { id: 'nomeCurto', nome: 'nomeCurto', rotulo: 'Nome curto', valor: valores.nomeCurto, erro: erros.nomeCurto, obrigatorio: true, maximo: 60, ajuda: 'Como aparece nas telas e listas.' }) %>
+  <p>Endereço, setor responsável e demais dados podem ser preenchidos depois, em "Configurar".</p>
+  <button class="br-button primary" type="submit">Cadastrar</button>
+</form>
+<%- include('../parciais/rodape') %>

@@ -2,26 +2,9 @@
 // Toda autorização é feita no serviço; as rotas só traduzem HTTP <-> casos de uso.
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
-import { ErroAplicacao, ErroNaoAutenticado, ErroNaoEncontrado, ErroProibido } from '../../infra/erros.js';
+import { ErroAplicacao, ErroNaoAutenticado } from '../../infra/erros.js';
+import { idDaUrl, exigirServidor, avisar } from '../../infra/web/rotas.js';
 import * as acesso from './servico.js';
-
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-// Identificador malformado na URL é tratado como inexistente (404), sem detalhes.
-const idDaUrl = (valor) => {
-  if (!UUID.test(valor)) throw new ErroNaoEncontrado();
-  return valor;
-};
-
-// Áreas de servidor: sem sessão volta para o início; estudante é proibido (CA-006.2).
-function exigirServidor(req, res, next) {
-  if (!req.contexto) return res.redirect(303, '/');
-  if (req.contexto.usuario.tipo !== 'SERVIDOR') return next(new ErroProibido());
-  next();
-}
-
-// Mensagem de resultado exibida uma única vez após um redirecionamento (padrão POST → GET).
-const avisar = (req, tipo, titulo, corpo = null) => { req.session.aviso = { tipo, titulo, corpo }; };
 
 const regenerar = (req) => new Promise((ok, falha) => req.session.regenerate((e) => (e ? falha(e) : ok())));
 const salvar = (req) => new Promise((ok, falha) => req.session.save((e) => (e ? falha(e) : ok())));
@@ -49,11 +32,6 @@ export function carregarUsuario({ pool }) {
 
 export function rotasDeAcesso({ pool, config, provedor }) {
   const r = Router();
-  r.use((req, res, next) => {
-    res.locals.aviso = req.session?.aviso ?? null;
-    if (req.session?.aviso && req.method === 'GET') delete req.session.aviso;
-    next();
-  });
   // Contadores separados para início e retorno do login (um não consome o limite do outro).
   const limitador = () => rateLimit({
     windowMs: 15 * 60 * 1000, limit: config.limiteLogin15Min ?? 300, standardHeaders: 'draft-8', legacyHeaders: false,

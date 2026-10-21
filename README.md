@@ -4,7 +4,7 @@ Gestão de entrega e devolução de livros didáticos do Instituto Federal Catar
 
 Documentação: [`AGENTS.md`](AGENTS.md) (regras e decisões), [`docs/requirements.md`](docs/requirements.md), [`docs/business-rules.md`](docs/business-rules.md), [`docs/architecture.md`](docs/architecture.md), [`docs/testing.md`](docs/testing.md).
 
-> Situação: login com o Google, solicitação e aprovação de acesso por campus, gestão da equipe do campus e área inicial do estudante funcionando. Estoque, entregas e devoluções ainda não existem.
+> Situação: login com o Google, solicitação e aprovação de acesso por campus, gestão da equipe do campus, cadastro e configuração de campi e área inicial do estudante funcionando. Estoque, entregas e devoluções ainda não existem.
 
 ## Desenvolvimento com Docker
 

@@ -54,6 +54,12 @@ async function ligarEstudante(db, usuario) {
 
 const escopoDe = (ctx) => dominio.escopoDoUsuario(ctx.usuario.id, ctx.atribuicoes);
 
+// Interface pública de autorização para os demais módulos (que não importam dominio.js daqui).
+export const escopoDoContexto = (ctx) => escopoDe(ctx);
+export const ehAdministradorInstitucional = (ctx) => ctx.usuario.tipo === 'SERVIDOR' && dominio.ehAdminInstitucional(ctx.atribuicoes);
+// Administra o campus: Administração do campus naquele campus ou administração institucional.
+export const administraCampus = (ctx, campusId) => ctx.usuario.tipo === 'SERVIDOR' && dominio.podeDecidirSolicitacao(ctx.atribuicoes, campusId);
+
 // RF-001, RF-005 e RF-006: registra o login de uma identidade do Google já validada pelo provedor.
 export async function registrarLogin(executor, claims, { emailsAdminInicial = [] } = {}) {
   return comContexto(executor, escopoSistema(), async (db) => {

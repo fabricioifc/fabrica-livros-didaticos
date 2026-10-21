@@ -23,7 +23,7 @@
 
 ## 0. Situação da implementação
 
-> Atualizada em 2026-10-21, no commit `6343fe4`. **Atualize esta seção a cada funcionalidade concluída** (e o teste de documentação garante que os IDs citados existem).
+> Atualizada em 2026-10-21 (RF-010 e RF-011 concluídos após o commit `629668b`). **Atualize esta seção a cada funcionalidade concluída** (e o teste de documentação garante que os IDs citados existem).
 > Legenda: ✅ implementado e testado · 🟡 parcial (ver observação) · ⬜ não iniciado. "Testado" = testes automatizados passando; telas também conferidas manualmente no ambiente dev.
 
 ### 0.1 Requisitos funcionais
@@ -38,8 +38,8 @@
 | RF-006 Acesso do estudante | ✅ | `servico.registrarLogin` (ligação por e-mail), migração 002, tela `estudante` | Mostra nome e matrícula; livros em posse dependem de RF-064. |
 | RF-007 Campus de trabalho | ⬜ | | Posterior. Hoje o servidor vê todos os campi em que tem papel. |
 | RF-008 Encerrar sessão | ✅ | `POST /auth/sair`, `src/infra/web/seguranca.js` | Sessões no PostgreSQL (migração 003); expiração por inatividade. |
-| RF-010 Cadastrar campi | 🟡 | tabela `campus` (migração 001), `db/seeds/dev/001_campi.sql` | Campi existem só por seed. **Sem tela** de cadastro/ativação. |
-| RF-011 Configurar o campus | 🟡 | tabela `campus_configuracao` | Tabela e RLS prontas; **sem tela**. |
+| RF-010 Cadastrar campi | ✅ | `src/modulos/campi/`, rotas `/campi`, `/campi/novo`, `/campi/:id/ativar` e `/desativar`, migração 004 (RLS e trava de código/situação) | Só a administração institucional. Campus inativo some da escolha de campus; histórico mantido. |
+| RF-011 Configurar o campus | ✅ | `campi/servico.salvarConfiguracao`, rota `/campi/:id/configuracao` | Administração do campus edita nomes, endereço, contato e a regra RN-21 (a regra em si é aplicada na entrega, ainda não implementada). Código só pela administração institucional (D-19). |
 | RF-012 Períodos, cursos, turmas | ⬜ | | |
 | RF-020 a RF-022 Catálogo e adoções | ⬜ | | |
 | RF-025 a RF-028 Estoque | ⬜ | | |
@@ -82,7 +82,7 @@
 
 ### 0.4 Próximos passos sugeridos (MVP, em ordem de dependência)
 
-1. RF-010/RF-011/RF-012: telas de campi, configuração do campus, períodos letivos, cursos e turmas.
+1. RF-012: períodos letivos, cursos e turmas (RF-010 e RF-011 concluídos).
 2. RF-020: catálogo de títulos.
 3. RF-025 a RF-028: estoque (entrada, baixa, ajuste, livro-razão).
 4. RF-030 a RF-033: vínculos de estudantes, importação CSV (DV-11 em aberto), cadastro manual, consulta.

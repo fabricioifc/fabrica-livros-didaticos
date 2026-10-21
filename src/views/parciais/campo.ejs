@@ -1,0 +1,23 @@
+<%#
+  Campo de texto: https://www.gov.br/ds/components/input (exemplos input-default e input-states, core 3.7.0).
+  Parâmetros: id, nome, rotulo, valor, erro (opcional), ajuda (opcional), tipo (padrão text),
+  obrigatorio, maximo, autocomplete, somenteLeitura.
+%>
+<%
+  const temErro = typeof erro !== 'undefined' && erro;
+  const temAjuda = typeof ajuda !== 'undefined' && ajuda;
+  const descritores = [temErro ? id + '-erro' : null, temAjuda ? id + '-ajuda' : null].filter(Boolean).join(' ');
+%>
+<div class="br-input<%= temErro ? ' danger' : '' %> mb-3">
+  <label for="<%= id %>"><%= rotulo %><%= (typeof obrigatorio !== 'undefined' && obrigatorio) ? ' (obrigatório)' : '' %></label>
+  <input id="<%= id %>" name="<%= nome %>" type="<%= typeof tipo !== 'undefined' && tipo ? tipo : 'text' %>"
+    value="<%= valor ?? '' %>"
+    <% if (typeof maximo !== 'undefined' && maximo) { %>maxlength="<%= maximo %>"<% } %>
+    <% if (typeof obrigatorio !== 'undefined' && obrigatorio) { %>required<% } %>
+    <% if (typeof somenteLeitura !== 'undefined' && somenteLeitura) { %>readonly<% } %>
+    <% if (typeof autocomplete !== 'undefined' && autocomplete) { %>autocomplete="<%= autocomplete %>"<% } %>
+    <% if (temErro) { %>aria-invalid="true"<% } %>
+    <% if (descritores) { %>aria-describedby="<%= descritores %>"<% } %>>
+  <% if (temAjuda) { %><p id="<%= id %>-ajuda"><%= ajuda %></p><% } %>
+  <% if (temErro) { %><span class="feedback danger" role="alert" id="<%= id %>-erro"><i class="fas fa-times-circle" aria-hidden="true"></i><%= erro %></span><% } %>
+</div>
