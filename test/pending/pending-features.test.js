@@ -27,7 +27,7 @@ describe('PENDENTE — autenticação, sessão e permissões', () => {
 });
 
 describe('PENDENTE — identificação do estudante', () => {
-  test.todo('matrícula digitada mostra nome, curso e turma; sem vínculo ativo no campus não avança (RN-77, CA-046.1, CA-046.2)');
+  test.todo('matrícula digitada mostra nome, curso e série; sem vínculo ativo no campus não avança (RN-77, CA-046.1, CA-046.2)');
   test.todo('QR code válido identifica o estudante (RN-78, CA-047.1)');
   test.todo('QR adulterado, de outra chave, de outro sistema ou de versão antiga é recusado (RN-78, CA-047.2)');
   test.todo('QR de estudante de outro campus não abre atendimento (RN-77, CA-095.1)');

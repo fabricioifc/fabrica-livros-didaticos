@@ -56,10 +56,10 @@ Ao implementar uma regra, atualize esta tabela e cite o ID nos testes.
 |---|---|---|
 | RN-06 | A **matrícula é única em todo o IFC** e identifica o estudante. Não pode haver dois cadastros com a mesma matrícula nem com o mesmo e-mail institucional. | ✅ |
 | RN-07 | O estudante só acessa o sistema se o e-mail `@estudantes.ifc.edu.br` usado no login estiver cadastrado. O acesso do estudante é **somente para consulta** (Q-08). | ✅ |
-| RN-08 | Um estudante tem **no máximo um vínculo ativo** em todo o IFC. O vínculo informa campus, curso, turma, série e período letivo. | ✅ |
-| RN-09 | Mudança de turma ou série dentro do mesmo campus atualiza o vínculo, sem afetar entregas anteriores (que guardam a turma da época — RN-03). | ✅ |
+| RN-08 | Um estudante tem **no máximo um vínculo ativo** em todo o IFC. O vínculo informa campus, curso, série e ano letivo (não há turmas — D-21). | ✅ |
+| RN-09 | Mudança de série ou de curso dentro do mesmo campus atualiza o vínculo, sem afetar entregas anteriores (que guardam o curso e a série da época — RN-03). | ✅ |
 | RN-10 | Estudante com vínculo encerrado (concluído, transferido, evadido, cancelado) **não é apagado**; seu histórico continua consultável. | ✅ |
-| RN-11 | Na **importação por planilha**, se houver qualquer linha inválida (matrícula ou e-mail duplicado, e-mail fora do domínio de estudantes, curso ou turma inexistentes), **nada é importado** e o sistema lista cada erro com o número da linha (Q-01). | ✅ |
+| RN-11 | Na **importação por planilha**, se houver qualquer linha inválida (matrícula ou e-mail duplicado, e-mail fora do domínio de estudantes, curso ou ano letivo inexistentes, série inválida), **nada é importado** e o sistema lista cada erro com o número da linha (Q-01). | ✅ |
 | RN-12 | A matrícula **não muda** quando o estudante é transferido entre campi. | 🟡 DP-04 |
 
 ---
@@ -70,7 +70,7 @@ Ao implementar uma regra, atualize esta tabela e cite o ID nos testes.
 
 | ID | Regra | Situação |
 |---|---|---|
-| RN-77 | O atendimento começa pela **identificação do estudante pela matrícula**, de uma de duas formas: **leitura de QR code** (RN-78) ou **digitação da matrícula**. O sistema mostra nome, curso e turma para o servidor conferir antes de seguir (DV-03). | ✅ |
+| RN-77 | O atendimento começa pela **identificação do estudante pela matrícula**, de uma de duas formas: **leitura de QR code** (RN-78) ou **digitação da matrícula**. O sistema mostra nome, curso e série para o servidor conferir antes de seguir (DV-03). | ✅ |
 | RN-78 | O QR code contém um **código emitido e assinado digitalmente pelo sistema** com a matrícula do estudante. Código com assinatura inválida, adulterado ou emitido por outro sistema é recusado. O QR code não contém outros dados pessoais. | ✅ |
 | RN-79 | **Origem e validade do QR code:** onde o estudante o obtém (área do estudante, carteirinha impressa ou outro), se expira e como invalidar um código perdido. Até a definição, a digitação da matrícula atende todos os casos. | 🟡 DV-19 |
 
@@ -80,7 +80,7 @@ Ao implementar uma regra, atualize esta tabela e cite o ID nos testes.
 |---|---|---|
 | RN-13 | A entrega é **preparada** por Operador ou Administrador do campus, escolhendo os livros para o estudante identificado (RN-77). A preparação **não** baixa o estoque. | ✅ |
 | RN-14 | O estudante precisa ter **vínculo ativo no campus** em que a entrega é preparada. | ✅ |
-| RN-15 | Entregas podem ocorrer **em qualquer data do ano**, pois os livros chegam aos poucos; não há bloqueio por data (Q-02). A entrega fica associada ao **período letivo do vínculo** do estudante (da sua turma). | ✅ |
+| RN-15 | Entregas podem ocorrer **em qualquer data do ano**, pois os livros chegam aos poucos; não há bloqueio por data (Q-02). A entrega fica associada ao **ano letivo do vínculo** do estudante. | ✅ |
 | RN-16 | Cada livro entregue é um **item** da entrega (título + quantidade). Uma entrega não pode repetir o mesmo título em dois itens. | ✅ |
 | RN-17 | **Quantidade por título: 1** em cada entrega (Q-03). | ✅ |
 | RN-18 | Se o estudante **já tem em posse** o mesmo título (de entrega anterior, em qualquer campus), o sistema **avisa** e o operador pode confirmar e seguir; não há bloqueio (Q-04). A confirmação fica registrada na entrega. | ✅ |
@@ -140,8 +140,8 @@ O prazo depende da **abrangência** do título (AGENTS.md, campo `titulo.abrange
 
 | ID | Regra | Situação |
 |---|---|---|
-| RN-44 | **Livro de série específica** (ex.: livro do 1º ano): prazo = **último dia do período letivo** da entrega. | ✅ |
-| RN-45 | **Livro de uso nos três anos do ensino médio** (ex.: volume único): o estudante **permanece com o livro** entre os anos; prazo = **último dia do período letivo da 3ª série** do estudante. | ✅ |
+| RN-44 | **Livro de série específica** (ex.: livro do 1º ano): prazo = **término das aulas do ano letivo** da entrega. | ✅ |
+| RN-45 | **Livro de uso nos três anos do ensino médio** (ex.: volume único): o estudante **permanece com o livro** entre os anos; prazo = **término das aulas do ano letivo da última série** do estudante (3ª, ou 4ª em cursos de 4 anos — DP-17). | ✅ |
 | RN-46 | **Encerramento do vínculo** (transferência, evasão, cancelamento, conclusão antes do previsto): o prazo de **todos** os livros em posse daquele vínculo passa a ser a **data de encerramento do vínculo**. | ✅ |
 | RN-47 | **Não há prorrogação** de prazo caso a caso (Q-11). | ✅ |
 
@@ -156,7 +156,7 @@ O prazo depende da **abrangência** do título (AGENTS.md, campo `titulo.abrange
 | RN-50 | Pendências e quantidades em posse são **sempre calculadas** a partir de entregas e devoluções; não existe contador salvo. | ✅ |
 | RN-51 | Pendências pertencem ao **campus da entrega** e aparecem só para servidores daquele campus (e perfis institucionais). | ✅ |
 | RN-52 | O estudante vê na área de consulta todos os livros em posse, com prazo e campus responsável, de todos os campi em que teve vínculo. | ✅ |
-| RN-53 | Consultas e relatórios de pendências por estudante, turma, curso, título, período letivo e campus; exportação CSV. | ✅ |
+| RN-53 | Consultas e relatórios de pendências por estudante, curso, série, título, ano letivo e campus; exportação CSV. | ✅ |
 
 ### 7.1 Nada consta
 
@@ -288,4 +288,5 @@ em posse, no prazo ──prazo passa──> pendente (vencido)
 | Data | Revisão | Alteração |
 |---|---|---|
 | 2026-10-21 | 1 | Criação do documento. |
+| 2026-10-21 | 3 | RF-012 simplificado (D-21): sem turmas nem semestres; vínculo com curso, série e ano letivo; prazos pelo término das aulas do ano letivo (RN-08, RN-09, RN-11, RN-15, RN-44, RN-45, RN-53, RN-77). |
 | 2026-10-21 | 2 | Incorporadas as decisões Q-01 a Q-12 e DV-01 a DV-09: assinatura no dispositivo do servidor, identificação por matrícula/QR code (novas RN-77 a RN-79), sem expiração, estorno pelo operador, sem transferência de livros (RN-63 a RN-65 removidas), perda/dano apenas com justificativa. |

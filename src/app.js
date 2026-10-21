@@ -7,6 +7,7 @@ import { ErroAplicacao } from './infra/erros.js';
 import { cabecalhosDeSeguranca, sessoes, semCache, protecaoCsrf, NOME_COOKIE } from './infra/web/seguranca.js';
 import { carregarUsuario, rotasDeAcesso } from './modulos/acesso/rotas.js';
 import { rotasDeCampi } from './modulos/campi/rotas.js';
+import { rotasDeOferta } from './modulos/campi/rotas-oferta.js';
 import { consumirAviso } from './infra/web/rotas.js';
 import { obterInstituicao } from './modulos/acesso/servico.js';
 
@@ -66,6 +67,7 @@ export function criarApp({ pool, config, provedor = null }) {
     app.use(consumirAviso);
     app.use(rotasDeAcesso({ pool, config, provedor }));
     app.use(rotasDeCampi({ pool }));
+    app.use(rotasDeOferta({ pool }));
   }
 
   app.use((req, res) => {

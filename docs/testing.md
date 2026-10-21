@@ -58,6 +58,9 @@ npm test
 | `test/integration/campi-servico.test.js` | RF-010/RF-011: criação, situação e configuração de campi; reforço no banco (RLS e trigger da migração 004) |
 | `test/integration/rotas-campi.test.js` | RF-010/RF-011 pela interface, com tentativas de código forjado e campus de outro por URL |
 | `test/unit/campi-dominio.test.js` | Validação e normalização dos dados de campus |
+| `test/integration/oferta-servico.test.js` | RF-012: anos letivos e cursos; um ano por campus; RLS; sem exclusão; turmas não existem mais (migração 006) |
+| `test/integration/rotas-oferta.test.js` | RF-012 pela interface, com edição de ano letivo e curso por URL de outro campus |
+| `test/unit/oferta-dominio.test.js` | Validação do ano, das datas e do nome do curso |
 | `test/integration/app.test.js` | Servidor HTTP: `GET /saude` (inclusive com banco fora do ar) e 404 padrão |
 | `test/integration/test-database.test.js` | Versão e conexão do banco, desfazimento de transações |
 | `test/docs/` | Consistência da documentação e regressões de decisões revogadas |
@@ -81,11 +84,11 @@ npm test
 
 | Métrica | Quantidade |
 |---|---|
-| Aprovados | 159 |
+| Aprovados | 181 |
 | Falhos | 0 |
 | Ignorados (`skip`) | 0 |
 | Pendentes (`todo`, funcionalidades não implementadas) | 69 |
-| Total | 228 |
+| Total | 250 |
 
 Cobertura (`npm run test:coverage`), incluindo `test/helpers/`: 98,0% das linhas e 95,1% dos ramos; `servico.js` e `dominio.js` do acesso com 100% das linhas. Lacunas conhecidas:
 

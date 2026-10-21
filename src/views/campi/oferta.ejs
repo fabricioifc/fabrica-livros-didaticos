@@ -1,0 +1,69 @@
+<%- include('../parciais/topo') %>
+<p><a href="/">Voltar ao início</a> · <a href="/campi/<%= campus.id %>/configuracao">Configuração do campus</a></p>
+<h1>Anos letivos e cursos — <%= campus.nome_curto %></h1>
+<p>Os livros são anuais. Cada estudante será associado a um curso, uma série e um ano letivo. O término das aulas define o prazo de devolução dos livros de série específica.</p>
+
+<%# ===== Anos letivos ===== %>
+<h2 id="anos" class="mt-4">Anos letivos</h2>
+<% if (anos.length) { %>
+  <%# Table: https://www.gov.br/ds/components/table (estrutura do exemplo table-irregular-1, core 3.7.0). %>
+  <div class="br-table" title="Anos letivos">
+    <table aria-label="Anos letivos do campus">
+      <thead><tr><th scope="col">Ano</th><th scope="col">Início das aulas</th><th scope="col">Término das aulas</th><th scope="col">Ações</th></tr></thead>
+      <tbody>
+        <% anos.forEach((a) => { %>
+          <tr>
+            <td><%= a.ano %></td>
+            <td><%= a.inicio.split('-').reverse().join('/') %></td>
+            <td><%= a.fim.split('-').reverse().join('/') %></td>
+            <td><a class="br-button secondary small" href="/oferta/anos/<%= a.id %>" aria-label="Editar ano letivo <%= a.ano %>">Editar</a></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+<% } else { %>
+  <%- include('../parciais/mensagem', { tipo: 'info', titulo: 'Nenhum ano letivo cadastrado.', corpo: null }) %>
+<% } %>
+<h3 class="mt-3">Cadastrar ano letivo</h3>
+<form method="post" action="/campi/<%= campus.id %>/oferta/anos" class="col-md-6 px-0">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <%- include('../parciais/campo', { id: 'ano-ano', nome: 'ano', rotulo: 'Ano', tipo: 'number', valor: valores.ano.ano, erro: erros.ano.ano, obrigatorio: true, ajuda: 'Ex.: 2027.' }) %>
+  <%- include('../parciais/campo', { id: 'ano-inicio', nome: 'inicio', rotulo: 'Início das aulas', tipo: 'date', valor: valores.ano.inicio, erro: erros.ano.inicio, obrigatorio: true }) %>
+  <%- include('../parciais/campo', { id: 'ano-fim', nome: 'fim', rotulo: 'Término das aulas', tipo: 'date', valor: valores.ano.fim, erro: erros.ano.fim, obrigatorio: true }) %>
+  <button class="br-button primary" type="submit">Cadastrar ano letivo</button>
+</form>
+
+<%# ===== Cursos ===== %>
+<h2 id="cursos" class="mt-5">Cursos</h2>
+<% if (cursos.length) { %>
+  <div class="br-table" title="Cursos">
+    <table aria-label="Cursos do campus">
+      <thead><tr><th scope="col">Curso</th><th scope="col">Situação</th><th scope="col">Ações</th></tr></thead>
+      <tbody>
+        <% cursos.forEach((c) => { %>
+          <tr>
+            <td><%= c.nome %></td>
+            <td><%= c.ativo ? 'Ativo' : 'Desativado' %></td>
+            <td>
+              <a class="br-button secondary small mb-1" href="/oferta/cursos/<%= c.id %>" aria-label="Editar curso <%= c.nome %>">Editar</a>
+              <form method="post" action="/oferta/cursos/<%= c.id %>/<%= c.ativo ? 'desativar' : 'ativar' %>" class="d-inline">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button class="br-button secondary small mb-1" type="submit" aria-label="<%= c.ativo ? 'Desativar' : 'Ativar' %> curso <%= c.nome %>"><%= c.ativo ? 'Desativar' : 'Ativar' %></button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+<% } else { %>
+  <%- include('../parciais/mensagem', { tipo: 'info', titulo: 'Nenhum curso cadastrado.', corpo: null }) %>
+<% } %>
+<h3 class="mt-3">Cadastrar curso</h3>
+<form method="post" action="/campi/<%= campus.id %>/oferta/cursos" class="col-md-6 px-0">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <%- include('../parciais/campo', { id: 'curso-nome', nome: 'nome', rotulo: 'Nome do curso', valor: valores.curso.nome, erro: erros.curso.nome, obrigatorio: true, maximo: 120, ajuda: 'Ex.: Técnico em Informática integrado ao Ensino Médio.' }) %>
+  <button class="br-button primary" type="submit">Cadastrar curso</button>
+</form>
+<%- include('../parciais/rodape') %>

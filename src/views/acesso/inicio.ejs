@@ -18,7 +18,8 @@
       <% campiAdministrados.forEach((c) => { %>
         <li><strong><%= c.nome %>:</strong>
           <a href="/acesso/campi/<%= c.id %>/equipe" aria-label="Equipe de <%= c.nome %>">equipe</a> ·
-          <a href="/campi/<%= c.id %>/configuracao" aria-label="Configuração de <%= c.nome %>">configuração</a>
+          <a href="/campi/<%= c.id %>/configuracao" aria-label="Configuração de <%= c.nome %>">configuração</a> ·
+          <a href="/campi/<%= c.id %>/oferta" aria-label="Anos letivos e cursos de <%= c.nome %>">anos letivos e cursos</a>
         </li>
       <% }) %>
     </ul>

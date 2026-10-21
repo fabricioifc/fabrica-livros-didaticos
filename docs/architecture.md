@@ -141,7 +141,7 @@ Cada módulo segue a estrutura da seção 3.3. Detalhes de permissões estão no
 
 - Cadastro por importação de planilha (CSV) e manual; sem integração com SIGAA nesta fase.
 - Identificação: **matrícula única no IFC** (evita duplicidade), nome, e-mail `@estudantes.ifc.edu.br`. Sem CPF.
-- Vínculo acadêmico por campus: curso, turma, ano letivo e situação (ativo, transferido, concluído, evadido, cancelado).
+- Vínculo acadêmico por campus: curso, série, ano letivo e situação (ativo, transferido, concluído, evadido, cancelado).
 - Estudante inativo nunca é apagado; o histórico de entregas e devoluções permanece.
 - A importação valida duplicidades (matrícula e e-mail) e informa linhas rejeitadas sem gravar parcialmente.
 
@@ -181,7 +181,7 @@ As "situações do exemplar" são representadas assim, sem estados contraditóri
 - **Aceite:** o estudante **assina com o dedo na tela do dispositivo do servidor**, no ato da entrega (seção 11). Só então a entrega é efetivada e o estoque é baixado. Sem expiração automática.
 - Gera o **termo de entrega assinado** (documento digital imutável, com código de verificação).
 - Cancelamento antes da assinatura; estorno depois da assinatura com justificativa: o operador estorna os próprios registros, o administrador do campus qualquer registro do campus.
-- Histórico consultável por estudante, turma, título e período, dentro do escopo do usuário.
+- Histórico consultável por estudante, curso, série, título e ano letivo, dentro do escopo do usuário.
 
 ### 5.7 Devoluções (`devolucoes`)
 
@@ -195,7 +195,7 @@ As "situações do exemplar" são representadas assim, sem estados contraditóri
 
 - Pendência = item entregue (assinado) cuja quantidade devolvida é menor que a entregue e cujo prazo de devolução já se aplica.
 - **Pendências são sempre calculadas** a partir de entregas e devoluções, nunca guardadas como contador.
-- Consultas por estudante, turma, ano letivo, título e campus.
+- Consultas por estudante, curso, série, ano letivo, título e campus.
 - Relatórios de entregas, devoluções, estoque e pendências; exportação CSV e versão para impressão.
 - Relatórios consolidados entre campi apenas para perfis institucionais.
 
@@ -229,7 +229,7 @@ As "situações do exemplar" são representadas assim, sem estados contraditóri
 | Usuário | `usuario` (servidor ou estudante) | Global |
 | Associação usuário–campus | `solicitacao_acesso` (pedido) e `atribuicao` (papel + campus) | Por campus |
 | Estudante | `estudante` (matrícula única no IFC) | Global |
-| Turma / vínculo acadêmico | `vinculo_estudante`, `curso`, `turma` | Por campus |
+| Vínculo acadêmico (curso, série, ano) | `vinculo_estudante`, `curso` | Por campus |
 | Ano letivo | `periodo_letivo` | Por campus |
 | Título de livro | `titulo`, `componente_curricular` | Global |
 | Exemplar físico | **Não é tabela**: representado por `estoque` (saldo) + `movimentacao_estoque` (livro-razão) | Por campus |
@@ -323,7 +323,7 @@ Documentos gerados a partir dos dados registrados:
 
 | Documento | Conteúdo |
 |---|---|
-| **Termo de entrega** (assinado) | Estudante (nome, matrícula, curso, turma), campus (nome oficial, endereço, setor), livros e quantidades, data/hora, operador responsável, texto e versão do termo, declaração de recebimento, evidências da assinatura |
+| **Termo de entrega** (assinado) | Estudante (nome, matrícula, curso, série), campus (nome oficial, endereço, setor), livros e quantidades, data/hora, operador responsável, texto e versão do termo, declaração de recebimento, evidências da assinatura |
 | **Comprovante de devolução** | Estudante, campus, livros, quantidades e estado, data/hora, servidor que recebeu, declaração de devolução |
 | **Nada consta** | Estudante, campus, data e abrangência (a confirmar, DP-09) |
 
@@ -387,7 +387,7 @@ Nunca versionar credenciais, segredos ou dados reais de estudantes.
 | 9 | Retenção e auditoria | 🟡 Parcial | Auditoria definida; retenção pendente (DP-14) |
 | 10 | Acessibilidade e validação da interface | 🟡 Parcial | GovBR-DS + WCAG 2.1 AA/eMAG, testes automáticos e manuais; pendente definir quem valida e se haverá teste com usuários |
 | 11 | Estilo das rotas (API REST × páginas no servidor) | ✅ Decidida | Páginas no servidor + JSON pontual (seção 3.1) — **A-01** |
-| 12 | Livros de série específica × três anos: prazos de devolução | ✅ Decidida | Fim do período letivo × fim da 3ª série; antecipado no encerramento do vínculo ([`business-rules.md`](business-rules.md), RN-44 a RN-47, Q-10) — **A-02** |
+| 12 | Livros de série específica × três anos: prazos de devolução | ✅ Decidida | Término do ano letivo × término da última série; antecipado no encerramento do vínculo ([`business-rules.md`](business-rules.md), RN-44 a RN-47, Q-10) — **A-02** |
 
 ### 14.2 Registro de decisões de arquitetura
 

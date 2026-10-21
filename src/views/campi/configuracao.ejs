@@ -1,6 +1,7 @@
 <%- include('../parciais/topo') %>
 <p><a href="<%= podeAlterarCodigo ? '/campi' : '/' %>">Voltar</a></p>
 <h1>Configuração — <%= campus.nome_curto %></h1>
+<p><a href="/campi/<%= campus.id %>/oferta">Anos letivos e cursos deste campus</a></p>
 <% if (!campus.ativo) { %>
   <div class="mb-3"><%- include('../parciais/mensagem', { tipo: 'warning', titulo: 'Campus inativo.', corpo: 'Ele não aparece para novas solicitações de acesso.' }) %></div>
 <% } %>

@@ -23,7 +23,7 @@
 
 ## 0. Situação da implementação
 
-> Atualizada em 2026-10-21 (RF-010 e RF-011 concluídos após o commit `629668b`). **Atualize esta seção a cada funcionalidade concluída** (e o teste de documentação garante que os IDs citados existem).
+> Atualizada em 2026-10-21 (RF-012 concluído e simplificado — sem turmas — após o commit `217acad`). **Atualize esta seção a cada funcionalidade concluída** (e o teste de documentação garante que os IDs citados existem).
 > Legenda: ✅ implementado e testado · 🟡 parcial (ver observação) · ⬜ não iniciado. "Testado" = testes automatizados passando; telas também conferidas manualmente no ambiente dev.
 
 ### 0.1 Requisitos funcionais
@@ -40,7 +40,7 @@
 | RF-008 Encerrar sessão | ✅ | `POST /auth/sair`, `src/infra/web/seguranca.js` | Sessões no PostgreSQL (migração 003); expiração por inatividade. |
 | RF-010 Cadastrar campi | ✅ | `src/modulos/campi/`, rotas `/campi`, `/campi/novo`, `/campi/:id/ativar` e `/desativar`, migração 004 (RLS e trava de código/situação) | Só a administração institucional. Campus inativo some da escolha de campus; histórico mantido. |
 | RF-011 Configurar o campus | ✅ | `campi/servico.salvarConfiguracao`, rota `/campi/:id/configuracao` | Administração do campus edita nomes, endereço, contato e a regra RN-21 (a regra em si é aplicada na entrega, ainda não implementada). Código só pela administração institucional (D-19). |
-| RF-012 Períodos, cursos, turmas | ⬜ | | |
+| RF-012 Anos letivos e cursos | ✅ | `src/modulos/campi/oferta*.js`, `rotas-oferta.js`, tela `/campi/:id/oferta`, migrações 005 e 006 | Simplificado (D-21): sem turmas nem semestres. Um ano letivo por ano em cada campus; o término é gravado e auditado (o cálculo de prazos é RF-061). Sem exclusão: correção por edição; curso sai de uso por desativação. |
 | RF-020 a RF-022 Catálogo e adoções | ⬜ | | |
 | RF-025 a RF-028 Estoque | ⬜ | | |
 | RF-030 a RF-034 Estudantes e vínculos | 🟡 | tabela `estudante` (migração 002) | Só o cadastro global e a ligação com o login. Falta `vinculo_estudante`, importação, cadastro manual, consulta e encerramento de vínculo. |
@@ -75,20 +75,19 @@
 
 ### 0.3 Infraestrutura pronta
 
-- **Banco:** migrações `001_acesso`, `002_estudante`, `003_sessao` (`npm run db:migrate`); seeds `db/seeds/` (base) e `db/seeds/dev/` (fictícios).
+- **Banco:** migrações `001_acesso` a `006_ano_letivo` (`npm run db:migrate`); seeds `db/seeds/` (base) e `db/seeds/dev/` (fictícios).
 - **Ambiente dev:** `compose.yaml` (`npm run dev:up`), login real com Google via `.env`. Ver `README.md`.
 - **Testes:** `node:test` + PostgreSQL real em Docker; provedor de login falso para rotas. Ver `docs/testing.md`.
 - **Padrões a reutilizar** em novos módulos: `src/modulos/acesso/` (`dominio.js` puro, `repositorio.js` SQL, `servico.js` com `comContexto` e auditoria, `rotas.js`), parciais EJS em `src/views/parciais/`, helpers de teste em `test/helpers/`.
 
 ### 0.4 Próximos passos sugeridos (MVP, em ordem de dependência)
 
-1. RF-012: períodos letivos, cursos e turmas (RF-010 e RF-011 concluídos).
-2. RF-020: catálogo de títulos.
-3. RF-025 a RF-028: estoque (entrada, baixa, ajuste, livro-razão).
-4. RF-030 a RF-033: vínculos de estudantes, importação CSV (DV-11 em aberto), cadastro manual, consulta.
-5. RF-080: termo de compromisso versionado.
-6. RF-046/RF-047 e RF-040 a RF-044: identificação, entrega e assinatura na tela.
-7. RF-050 a RF-053, RF-060 a RF-064, RF-070, RF-071, RF-081: devolução, pendências, relatórios e documentos.
+1. RF-020: catálogo de títulos (RF-010, RF-011 e RF-012 concluídos).
+2. RF-025 a RF-028: estoque (entrada, baixa, ajuste, livro-razão).
+3. RF-030 a RF-033: vínculos de estudantes, importação CSV (DV-11 em aberto), cadastro manual, consulta.
+4. RF-080: termo de compromisso versionado.
+5. RF-046/RF-047 e RF-040 a RF-044: identificação, entrega e assinatura na tela.
+6. RF-050 a RF-053, RF-060 a RF-064, RF-070, RF-071, RF-081: devolução, pendências, relatórios e documentos.
 
 ---
 
@@ -243,10 +242,10 @@ O Administrador do campus mantém nome oficial, endereço, setor responsável, c
 - CA-011.1 Os dados do campus aparecem nos documentos emitidos depois da alteração; documentos anteriores não mudam (RN-03).
 - CA-011.2 Administrador do campus A não altera configurações do campus B.
 
-**RF-012 — Períodos letivos, cursos e turmas** · MVP
-O Administrador do campus cadastra períodos letivos (início e fim), cursos e turmas (curso, série, período).
-- CA-012.1 Turma pertence a um curso e a um período do mesmo campus.
-- CA-012.2 O fim do período letivo é usado no cálculo de prazos (RF-061).
+**RF-012 — Anos letivos e cursos** · MVP
+O Administrador do campus cadastra os anos letivos (ano, início e término das aulas) e os cursos. Os livros são anuais: **não há turmas nem semestres** (D-21); o estudante é associado a curso, série e ano letivo no vínculo (RF-030, RF-031).
+- CA-012.1 Ano letivo e curso pertencem a um campus; cada campus tem no máximo um ano letivo por ano e nomes de curso únicos.
+- CA-012.2 O término das aulas do ano letivo é usado no cálculo de prazos (RF-061).
 
 ### 4.3 Catálogo e adoções
 
@@ -287,8 +286,8 @@ Consulta por título no campus: disponível, com estudantes (em posse) e baixado
 ### 4.5 Estudantes
 
 **RF-030 — Importar estudantes por planilha** · MVP · RN-11 (Q-01)
-Importação de matrícula, nome, e-mail institucional, curso, turma e período (formato: DV-11).
-- CA-030.1 Se houver qualquer linha inválida (matrícula ou e-mail duplicado, e-mail fora do domínio de estudantes, curso ou turma inexistente), **nada** é importado e o sistema lista cada erro com o número da linha.
+Importação de matrícula, nome, e-mail institucional, curso, série e ano letivo (formato: DV-11).
+- CA-030.1 Se houver qualquer linha inválida (matrícula ou e-mail duplicado, e-mail fora do domínio de estudantes, curso ou ano letivo inexistente, série inválida), **nada** é importado e o sistema lista cada erro com o número da linha.
 - CA-030.2 Planilha válida cria ou atualiza estudantes e vínculos no campus do usuário.
 - CA-030.3 Somente dados do campus do usuário são afetados.
 
@@ -297,10 +296,10 @@ Importação de matrícula, nome, e-mail institucional, curso, turma e período 
 - CA-031.2 O estudante tem no máximo um vínculo ativo em todo o IFC.
 
 **RF-032 — Consultar estudante e histórico** · MVP · RN-09, RN-10
-Busca por nome, matrícula ou turma; ficha com vínculo, livros em posse, prazos, entregas, devoluções e documentos.
+Busca por nome, matrícula, curso ou série; ficha com vínculo, livros em posse, prazos, entregas, devoluções e documentos.
 - CA-032.1 Servidor só encontra estudantes com vínculo (atual ou passado) no seu campus.
 - CA-032.2 Estudante com vínculo encerrado continua consultável, com histórico completo.
-- CA-032.3 Entregas antigas mostram a turma da época, mesmo após mudança de turma.
+- CA-032.3 Entregas antigas mostram o curso e a série da época, mesmo após mudança de série.
 
 **RF-033 — Encerrar vínculo** · MVP · RN-46
 Registrar conclusão, evasão, cancelamento ou transferência, com data.
@@ -319,7 +318,7 @@ O Operador ou Administrador do campus escolhe o estudante e os títulos.
 - CA-040.2 Cada título aparece uma única vez, com quantidade 1.
 - CA-040.3 Título sem saldo disponível não pode ser incluído.
 - CA-040.4 Se o estudante já tem uma entrega aguardando assinatura, é preciso concluí-la ou cancelá-la antes.
-- CA-040.5 Não há bloqueio por data: entregas podem ser preparadas em qualquer dia do ano (Q-02). A entrega fica associada ao período letivo do vínculo do estudante.
+- CA-040.5 Não há bloqueio por data: entregas podem ser preparadas em qualquer dia do ano (Q-02). A entrega fica associada ao ano letivo do vínculo do estudante.
 - CA-040.6 A preparação não altera o estoque.
 - CA-040.7 Perfis Consulta e Estudante não conseguem preparar entregas (inclusive por requisição direta).
 
@@ -355,7 +354,7 @@ No ato da entrega, o servidor passa o próprio dispositivo ao estudante, que lê
 - CA-045.1 Definido após DV-06; até lá, não implementar.
 
 **RF-046 — Identificar o estudante pela matrícula digitada** · MVP · DV-03
-- CA-046.1 O servidor digita a matrícula; o sistema mostra nome, curso e turma para conferência antes de seguir.
+- CA-046.1 O servidor digita a matrícula; o sistema mostra nome, curso e série para conferência antes de seguir.
 - CA-046.2 Matrícula inexistente ou sem vínculo ativo no campus do servidor mostra mensagem clara e não avança.
 - CA-046.3 A busca só encontra estudantes com vínculo no campus do servidor (RF-095).
 
@@ -399,14 +398,14 @@ O estudante informa ao servidor qual livro foi perdido ou danificado e o motivo;
 - CA-060.2 Não existe contador salvo de posse ou pendência; o valor é sempre derivado dos registros.
 
 **RF-061 — Calcular prazo de devolução** · MVP · RN-44 a RN-47 (Q-10, Q-11)
-- CA-061.1 Livro de série específica: último dia do período letivo da entrega.
-- CA-061.2 Livro de ensino médio completo: último dia do período letivo da 3ª série do estudante.
+- CA-061.1 Livro de série específica: término das aulas do ano letivo da entrega.
+- CA-061.2 Livro de ensino médio completo: término das aulas do ano letivo em que o estudante cursa a última série (DP-17).
 - CA-061.3 Vínculo encerrado: data de encerramento, para todos os livros em posse daquele vínculo.
 - CA-061.4 Não há tolerância nem prorrogação individual.
 - CA-061.5 Prazos consideram o fuso de Brasília; "até a data X" vale até 23:59:59.
 
 **RF-062 — Consultar pendências** · MVP · RN-49, RN-51, RN-53
-Filtros por estudante, turma, curso, título e período letivo; distinção entre "em posse, no prazo" e "pendente (vencido)".
+Filtros por estudante, curso, série, título e ano letivo; distinção entre "em posse, no prazo" e "pendente (vencido)".
 - CA-062.1 Só aparecem pendências de entregas do campus do usuário (ou todos os campi para perfis institucionais).
 - CA-062.2 Lista paginada, ordenável e exportável (RF-071).
 
@@ -425,7 +424,7 @@ Filtros por estudante, turma, curso, título e período letivo; distinção entr
 ### 4.9 Relatórios e exportação
 
 **RF-070 — Relatórios do campus** · MVP
-Entregas e devoluções por período, estoque por título, pendências por turma/curso, perdas e danos.
+Entregas e devoluções por período, estoque por título, pendências por curso/série, perdas e danos.
 - CA-070.1 Os totais conferem com as consultas detalhadas.
 - CA-070.2 Dados de outros campi nunca aparecem.
 
@@ -448,7 +447,7 @@ O Administrador institucional publica versões do termo, único para todos os ca
 - CA-080.2 Versões anteriores continuam consultáveis.
 
 **RF-081 — Gerar termo de entrega assinado** · MVP · RN-03, RN-33, RN-34
-- CA-081.1 O termo contém: estudante (nome, matrícula, curso, turma), campus (nome oficial, endereço, setor), livros, data/hora, servidor responsável, texto e versão do termo, declaração de recebimento, imagem da assinatura e código de verificação.
+- CA-081.1 O termo contém: estudante (nome, matrícula, curso, série), campus (nome oficial, endereço, setor), livros, data/hora, servidor responsável, texto e versão do termo, declaração de recebimento, imagem da assinatura e código de verificação.
 - CA-081.2 Alterar dados do estudante ou do campus depois não altera o termo emitido.
 - CA-081.3 O termo pode ser visualizado pelo estudante e pelos servidores autorizados do campus, e impresso ou salvo em PDF pelo navegador.
 - CA-081.4 Não existe fluxo de impressão obrigatória nem arquivamento em papel.
@@ -593,3 +592,4 @@ As decisões das seções 2.2 e 2.3 foram aplicadas em 2026-10-21 em `docs/busin
 | 2026-10-21 | 1 | Criação do documento, incorporando as respostas Q-01 a Q-12. |
 | 2026-10-21 | 2 | Respostas às dúvidas DV-01 a DV-09: novos RF-046, RF-047 e RNF-028; RF-053 passa a MVP; RF-045 e RNF-015 passam a Posterior; novas dúvidas DV-19 e DV-20. |
 | 2026-10-21 | 3 | Seção 9 atualizada: decisões aplicadas nos demais documentos. |
+| 2026-10-21 | 4 | RF-012 simplificado (D-21): anos letivos e cursos, sem turmas nem semestres; ajustes em RF-030, RF-032, RF-046, RF-061, RF-062, RF-070 e RF-081. |

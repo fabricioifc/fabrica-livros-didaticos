@@ -1,0 +1,19 @@
+<%- include('../parciais/topo') %>
+<% const nomes = { ano: ['anos', 'ano letivo'], curso: ['cursos', 'curso'] }; const [ancora, rotuloTipo] = nomes[tipo]; %>
+<p><a href="/campi/<%= item.campus_id %>/oferta#<%= ancora %>">Voltar</a></p>
+<h1>Editar <%= rotuloTipo %></h1>
+<% if (Object.keys(erros).length) { %>
+  <div class="mb-3"><%- include('../parciais/mensagem', { tipo: 'danger', titulo: 'Corrija os campos indicados.', corpo: null }) %></div>
+<% } %>
+<form method="post" action="/oferta/<%= ancora %>/<%= item.id %>" class="col-md-6 px-0">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <% if (tipo === 'ano') { %>
+    <%- include('../parciais/campo', { id: 'ano', nome: 'ano', rotulo: 'Ano', tipo: 'number', valor: item.ano, erro: erros.ano, obrigatorio: true }) %>
+    <%- include('../parciais/campo', { id: 'inicio', nome: 'inicio', rotulo: 'Início das aulas', tipo: 'date', valor: item.inicio, erro: erros.inicio, obrigatorio: true }) %>
+    <%- include('../parciais/campo', { id: 'fim', nome: 'fim', rotulo: 'Término das aulas', tipo: 'date', valor: item.fim, erro: erros.fim, obrigatorio: true, ajuda: 'Mudar o término altera o prazo de devolução dos livros de série específica entregues neste ano.' }) %>
+  <% } else { %>
+    <%- include('../parciais/campo', { id: 'nome', nome: 'nome', rotulo: 'Nome do curso', valor: item.nome, erro: erros.nome, obrigatorio: true, maximo: 120 }) %>
+  <% } %>
+  <button class="br-button primary" type="submit">Salvar</button>
+</form>
+<%- include('../parciais/rodape') %>

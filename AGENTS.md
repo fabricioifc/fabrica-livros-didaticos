@@ -238,12 +238,12 @@ Legenda: ✅ permitido · 🔸 apenas no(s) campus(i) atribuído(s) · 👤 apen
 | `atribuicao` | Global com campus opcional | Papel + escopo. |
 | `componente_curricular`, `titulo` | **Global** | Catálogo compartilhado; uma linha por edição (ISBN). |
 | `termo_modelo` | **Global**, versionado | Termo único para todos os campi (C9). |
-| `periodo_letivo`, `curso`, `turma` | Por campus | Oferta local. |
+| `periodo_letivo` (ano letivo), `curso` | Por campus | Oferta local. Sem turmas nem semestres (D-21). |
 | `adocao` | Por campus | Títulos, cursos/séries e quantidades de cada campus. |
 | `estoque` | Por campus | Saldo disponível por título (C6). |
 | `movimentacao_estoque` | Por campus | Livro-razão imutável de entradas/saídas. Não há transferência entre campi (C14). |
 | `estudante` | **Global** | Matrícula única no IFC (C8); sem CPF (C7). |
-| `vinculo_estudante` | Por campus | Matrícula ativa em um campus/curso/turma/período. |
+| `vinculo_estudante` | Por campus | Matrícula ativa em um campus, com curso, série e ano letivo. |
 | `entrega`, `entrega_item` | Por campus (da operação) | Controle interno de cada campus (C9). |
 | `assinatura_termo` | Por campus (da entrega) | Imagem e traçado da assinatura feita na tela do servidor e demais evidências (seção 8). |
 | `devolucao`, `devolucao_item` | Por campus (que recebeu) | Atendimento + itens ligados aos itens de entrega; imutáveis. |
@@ -376,21 +376,14 @@ CREATE TABLE campus_configuracao (
   permite_entrega_com_pendencia boolean NOT NULL DEFAULT true   -- RN-21: padrão é permitir com aviso
 );
 
-CREATE TABLE periodo_letivo (
+CREATE TABLE periodo_letivo (                  -- ANO letivo (D-21): um por ano em cada campus
   id uuid PRIMARY KEY, campus_id uuid NOT NULL REFERENCES campus(id),
-  rotulo text NOT NULL, inicio date NOT NULL, fim date NOT NULL,
-  UNIQUE (campus_id, id), UNIQUE (campus_id, rotulo)
+  ano smallint NOT NULL, inicio date NOT NULL, fim date NOT NULL,   -- fim = término das aulas (prazo, RN-44)
+  UNIQUE (campus_id, id), UNIQUE (campus_id, ano)
 );
 CREATE TABLE curso (
   id uuid PRIMARY KEY, campus_id uuid NOT NULL REFERENCES campus(id), nome text NOT NULL,
   UNIQUE (campus_id, id)
-);
-CREATE TABLE turma (
-  id uuid PRIMARY KEY, campus_id uuid NOT NULL, curso_id uuid NOT NULL,
-  periodo_letivo_id uuid NOT NULL, nome text NOT NULL, serie smallint,
-  UNIQUE (campus_id, id),
-  FOREIGN KEY (campus_id, curso_id)          REFERENCES curso(campus_id, id),
-  FOREIGN KEY (campus_id, periodo_letivo_id) REFERENCES periodo_letivo(campus_id, id)
 );
 
 CREATE TABLE adocao (
@@ -434,12 +427,13 @@ CREATE TABLE vinculo_estudante (
   id uuid PRIMARY KEY,
   campus_id uuid NOT NULL REFERENCES campus(id),
   estudante_id uuid NOT NULL REFERENCES estudante(id),
-  curso_id uuid NOT NULL, turma_id uuid,
+  curso_id uuid NOT NULL, periodo_letivo_id uuid NOT NULL,
+  serie smallint NOT NULL CHECK (serie BETWEEN 1 AND 4),   -- DP-17
   situacao text NOT NULL,                         -- ATIVO, TRANSFERIDO, CONCLUIDO, EVADIDO, CANCELADO
   inicio date NOT NULL, fim date,
   UNIQUE (campus_id, id),
   FOREIGN KEY (campus_id, curso_id) REFERENCES curso(campus_id, id),
-  FOREIGN KEY (campus_id, turma_id) REFERENCES turma(campus_id, id)
+  FOREIGN KEY (campus_id, periodo_letivo_id) REFERENCES periodo_letivo(campus_id, id)
 );
 -- no máximo um vínculo ATIVO por estudante em todo o IFC
 CREATE UNIQUE INDEX ux_vinculo_ativo ON vinculo_estudante (estudante_id) WHERE situacao = 'ATIVO';
@@ -462,7 +456,7 @@ CREATE TABLE entrega (
   estornada_por uuid REFERENCES usuario(id),       -- RN-28
   estornada_em timestamptz,
   justificativa_estorno text,
-  snapshot_estudante jsonb NOT NULL,               -- nome, matrícula, curso, turma na data
+  snapshot_estudante jsonb NOT NULL,               -- nome, matrícula, curso, série na data
   snapshot_unidade   jsonb NOT NULL,               -- nome oficial, endereço, setor na data
   CHECK (status <> 'ESTORNADA' OR (estornada_por IS NOT NULL AND justificativa_estorno IS NOT NULL)),
   UNIQUE (campus_id, id),
@@ -556,7 +550,7 @@ CREATE INDEX ix_auditoria_campus_data ON auditoria (campus_id, ocorrido_em);
 
 ### 7.3 Integridade e consistência
 
-- **FK compostas `(campus_id, id)`** entre tabelas do mesmo campus impedem, no banco, que uma entrega do Campus A referencie vínculo, período ou turma do Campus B.
+- **FK compostas `(campus_id, id)`** entre tabelas do mesmo campus impedem, no banco, que uma entrega do Campus A referencie vínculo, ano letivo ou curso do Campus B.
 - **Estoque:** `estoque.disponivel` e `movimentacao_estoque` são alterados na **mesma transação**, com `SELECT ... FOR UPDATE` na linha de estoque. O `CHECK (disponivel >= 0)` impede saldo negativo mesmo sob concorrência.
 - **Entrega:** só baixa estoque no momento da **assinatura** (status `ASSINADA`); na assinatura, revalida saldo. Entrega `PREPARADA` não reserva estoque.
 - **Devolução:** somente no campus da entrega; soma das devoluções de um item ≤ quantidade entregue; só `DEVOLVIDO` retorna ao estoque; `PERDIDO` não retorna; `DANIFICADO` não retorna (proposta, DV-20). Danificado e perdido exigem justificativa ([`docs/business-rules.md`](docs/business-rules.md), RN-40, RN-66).
@@ -596,7 +590,7 @@ Objetivo: substituir a folha impressa por uma assinatura que o estudante faz **c
 1. O operador identifica o estudante pela **matrícula**, de uma de duas formas:
    - **QR code:** a câmera do dispositivo lê um QR code com um **token assinado pelo sistema** (ex.: JWT) contendo a matrícula e dados de controle (`tipo`, emissão, identificador do token e, se houver, validade). Nenhum outro dado pessoal.
    - **Digitação** da matrícula.
-2. O backend valida o token (assinatura, tipo, validade, versão) ou a matrícula, confirma vínculo **ativo no campus do operador** e mostra nome, curso e turma para conferência.
+2. O backend valida o token (assinatura, tipo, validade, versão) ou a matrícula, confirma vínculo **ativo no campus do operador** e mostra nome, curso e série para conferência.
 3. Token inválido, adulterado, expirado ou de outro sistema é recusado; o operador pode digitar a matrícula.
 4. **Pendente (DV-19):** onde o estudante obtém o QR code (área do estudante, carteirinha impressa ou outro), se expira e como invalidar um código perdido. Para permitir invalidação sem guardar cada token, o modelo prevê `estudante.qr_versao` (incrementada ao invalidar). Até a definição, a digitação da matrícula atende todos os casos.
 
@@ -874,6 +868,8 @@ Uma funcionalidade só está concluída quando:
 | D-17 | 2026-10-21 | Implementação do acesso: toda transação da aplicação roda com `SET LOCAL ROLE livros_app` (sem `BYPASSRLS`); o usuário de login da aplicação é membro de `livros_app`. `BOOTSTRAP_ADMIN_EMAILS` só cria administrador enquanto não houver **nenhum** administrador institucional ativo, para não virar acesso permanente. Ninguém decide a própria solicitação de acesso. | Nenhum. |
 | D-18 | 2026-10-21 | Papel de campus (Operador, Consulta, Admin do campus) só é concedido a quem **já tem papel vigente naquele campus**, isto é, entrou por solicitação aprovada. Fluxo: solicitar → aprovar → promover. Impede que um admin conceda papéis a servidores alheios ao campus. | Nenhum; novo campus: o servidor solicita acesso, o admin institucional aprova e o promove a admin do campus. |
 | D-19 | 2026-10-21 | Campus: só a administração institucional cria, ativa/desativa e altera o **código**; a Administração do campus edita nomes oficial/curto, endereço, contato e regras do próprio campus (RF-011). Reforçado no banco (migração 004: RLS + trigger). | Nenhum. |
+| D-20 | 2026-10-21 | Oferta do campus (RF-012) no módulo `campi`: anos letivos e cursos por campus, com RLS e sem exclusão (correção por edição; curso sai de uso por desativação). Enquanto o JavaScript do GovBR-DS não é carregado, datas usam o campo de data nativo dentro de `br-input` e escolhas usam `br-radio`, em vez do DateTimePicker e do Select oficiais. | Nenhum. Trocar pelos componentes oficiais ao carregar o JavaScript do DS. |
+| D-21 | 2026-10-21 | **RF-012 simplificado** a pedido do responsável do projeto: os livros são anuais; **não há turmas nem semestres**. A oferta do campus é **ano letivo** (um por ano, com início e término das aulas) **+ curso**; o estudante será associado a curso, série e ano letivo no vínculo. Tabela `turma` removida (migração 006); `periodo_letivo` passa a representar o ano letivo (coluna `ano`). | Nenhum. |
 
 ---
 
@@ -886,7 +882,7 @@ Uma funcionalidade só está concluída quando:
 | R-01 | Vazamento de dados entre campi ou entre estudantes | Alto (LGPD) | Camada de escopo, RLS, testes da seção 13, revisão. |
 | R-02 | Dados de estudantes (muitos menores) em VPS fora da infraestrutura do IFC | Alto | Somente dados fictícios até DP-01; HTTPS, backups criptografados, acesso SSH restrito. |
 | R-03 | Uso de celular **pessoal** do servidor no atendimento (perda, compartilhamento, sessão aberta) | Médio | Login institucional, expiração por inatividade, `no-store`, nada salvo no aparelho, logout fácil (seção 5.4). |
-| R-04 | QR code copiado ou fotografado por terceiros | Baixo | Só identifica (não autoriza nada); o servidor confere nome e turma; invalidação por `qr_versao`; validade conforme DV-19. |
+| R-04 | QR code copiado ou fotografado por terceiros | Baixo | Só identifica (não autoriza nada); o servidor confere nome, curso e série; invalidação por `qr_versao`; validade conforme DV-19. |
 | R-05 | E-mail do estudante ausente ou errado na planilha → não consegue consultar seus livros | Baixo | Validação na importação; não afeta entrega nem assinatura. |
 | R-06 | Servidor escolhe campus errado e é aprovado por engano | Baixo | Aprovação pelo admin do campus; revogação simples; auditoria. |
 | R-07 | Requisitos de Fraiburgo tratados como universais | Médio | Validar com um segundo campus antes da expansão. |
@@ -901,7 +897,7 @@ Uma funcionalidade só está concluída quando:
 |----|---------|----------------------|
 | DP-01 | Aval da DTI/encarregado de dados (LGPD) para usar **dados reais** na VPS do projeto, ou migração para infraestrutura do IFC — **adiada** (DV-01); só dados fictícios até lá | DTI / Encarregado de dados |
 | DP-02 | Criação do cliente OAuth na organização Google Workspace do IFC (tipo "Interno") e se `@estudantes.ifc.edu.br` pertence à mesma organização | DTI |
-| DP-03 | Formato da planilha de importação de estudantes (colunas mínimas: matrícula, nome, e-mail institucional, curso, turma) | Registro Acadêmico / CGE |
+| DP-03 | Formato da planilha de importação de estudantes (colunas mínimas: matrícula, nome, e-mail institucional, curso, série, ano letivo) | Registro Acadêmico / CGE |
 | DP-04 | A matrícula se mantém na transferência entre campi? (P2) | Registro Acadêmico |
 | DP-05 | Curadoria do catálogo: centralizada × distribuída | PROEN / Bibliotecas |
 | DP-06 | Quem serão os administradores institucionais e o admin do Campus Fraiburgo | Gestão |
@@ -915,6 +911,7 @@ Uma funcionalidade só está concluída quando:
 | DP-14 | Política de retenção dos dados após conclusão/saída do estudante | Encarregado de dados |
 | DP-15 | Estudante impossibilitado de assinar (ex.: deficiência motora, recusa) — **adiada** (DV-06) | CGE / PROEN |
 | DP-16 | Origem e validade do QR code de identificação; como invalidar código perdido (DV-19) | Responsável do projeto / CGE |
+| DP-17 | A série vai de 1 a 4 (cursos integrados de até 4 anos)? O vínculo aceitará 1 a 4; RN-45 considera a última série do curso | CGE / PROEN |
 
 ---
 
