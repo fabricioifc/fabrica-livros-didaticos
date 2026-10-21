@@ -91,6 +91,33 @@ export async function registrarLogin(executor, claims, { emailsAdminInicial = []
   });
 }
 
+// Dados públicos de apresentação (cabeçalho e rodapé): nome da instituição vindo do banco.
+export async function obterInstituicao(executor) {
+  return comContexto(executor, { usuarioId: null, campi: [] }, (db) => repo.buscarInstituicao(db));
+}
+
+// Tela inicial do servidor: campi disponíveis, situação da solicitação e acessos atuais.
+export async function painelDoServidor(executor, ctx) {
+  if (ctx.usuario.tipo !== 'SERVIDOR') throw new ErroProibido();
+  return comContexto(executor, escopoDe(ctx), async (db) => {
+    const campiComAcesso = [...new Set(ctx.atribuicoes.filter((a) => a.campus_id).map((a) => a.campus_id))];
+    const nomes = new Map((await repo.listarCampiPorId(db, campiComAcesso)).map((c) => [c.id, c.nome_curto]));
+    const acessos = campiComAcesso.map((id) => ({
+      campusId: id,
+      campus: nomes.get(id),
+      papeis: ctx.atribuicoes.filter((a) => a.campus_id === id).map((a) => a.papel),
+      podeAprovar: dominio.podeDecidirSolicitacao(ctx.atribuicoes, id),
+    }));
+    const institucionais = ctx.atribuicoes.filter((a) => !a.campus_id).map((a) => a.papel);
+    return {
+      acessos,
+      institucionais,
+      ultimaSolicitacao: await repo.buscarUltimaSolicitacao(db, ctx.usuario.id),
+      campiAtivos: await repo.listarCampiAtivos(db),
+    };
+  });
+}
+
 // RF-002: servidor declara seu campus. A solicitação não concede nenhum acesso.
 export async function solicitarAcesso(executor, ctx, campusId) {
   validar(uuid('Campus'), campusId);

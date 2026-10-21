@@ -1,0 +1,13 @@
+<%- include('../parciais/topo') %>
+<h1>Livros Didáticos</h1>
+<p>Entrega, devolução e consulta de livros didáticos do <%= instituicao ? instituicao.nome_oficial : 'Instituto' %>.</p>
+<p>Servidores e estudantes entram com a conta institucional do Google.</p>
+<% if (loginDisponivel) { %>
+  <%# Sign-in: https://www.gov.br/ds/components/signin (exemplo signin-primary, core 3.7.0). %>
+  <form method="get" action="/auth/login">
+    <button class="br-sign-in primary" type="submit"><i class="fas fa-user" aria-hidden="true"></i>Entrar com conta institucional</button>
+  </form>
+<% } else { %>
+  <%- include('../parciais/mensagem', { tipo: 'warning', titulo: 'Login indisponível.', corpo: 'O login com o Google ainda não foi configurado neste ambiente.' }) %>
+<% } %>
+<%- include('../parciais/rodape') %>

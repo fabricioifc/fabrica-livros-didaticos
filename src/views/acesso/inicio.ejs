@@ -1,0 +1,10 @@
+<%- include('../parciais/topo') %>
+<% const nomes = { ADMIN_INSTITUCIONAL: 'Administração institucional', ADMIN_CAMPUS: 'Administração do campus', OPERADOR: 'Atendimento (entregas e devoluções)', CONSULTA: 'Consulta' }; %>
+<h1>Início</h1>
+<h2>Seus acessos</h2>
+<ul>
+  <% institucionais.forEach((p) => { %><li><%= nomes[p] %> — todos os campi</li><% }) %>
+  <% acessos.forEach((a) => { %><li><strong><%= a.campus %>:</strong> <%= a.papeis.map((p) => nomes[p]).join(', ') %></li><% }) %>
+</ul>
+<%- include('../parciais/mensagem', { tipo: 'info', titulo: 'Funcionalidades em desenvolvimento.', corpo: 'Aprovação de acessos, estoque, entregas e devoluções serão liberados nas próximas versões.' }) %>
+<%- include('../parciais/rodape') %>

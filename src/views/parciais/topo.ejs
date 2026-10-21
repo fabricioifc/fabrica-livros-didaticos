@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= titulo %> — Livros Didáticos</title>
+  <%# Ícones antes do GovBR-DS (Fluxo de Desenvolvimento: dependências externas primeiro). %>
+  <link rel="stylesheet" href="/vendor/fontawesome/css/all.min.css">
+  <link rel="stylesheet" href="/vendor/govbr-ds/core.min.css">
+</head>
+<body>
+<%# Estrutura do Template Base: https://www.gov.br/ds/templates/base (core 3.7.0, templates/base). %>
+<div class="template-base">
+  <nav class="br-skiplink" role="menubar">
+    <a class="br-item" href="#main-content" role="menuitem" accesskey="1">Ir para o conteúdo <span aria-hidden="true">(1/2)</span> <span aria-hidden="true" class="br-tag text ml-1">1</span></a>
+    <a class="br-item" href="#footer" role="menuitem" accesskey="2">Ir para o rodapé <span aria-hidden="true">(2/2)</span> <span aria-hidden="true" class="br-tag text ml-1">2</span></a>
+  </nav>
+
+  <%# Header padrão: https://www.gov.br/ds/components/header (o compacto oculta a assinatura). Sem logotipo até DP-11. %>
+  <header class="br-header">
+    <div class="container-lg">
+      <div class="header-top">
+        <div class="header-logo">
+          <div class="header-sign"><%= instituicao ? instituicao.nome_oficial : '' %></div>
+        </div>
+        <div class="header-actions">
+          <div class="header-login">
+            <% if (usuario) { %>
+              <span class="mr-2"><%= usuario.nome %></span>
+              <form method="post" action="/auth/sair">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button class="br-button secondary small" type="submit"><i class="fas fa-sign-out-alt" aria-hidden="true"></i>Sair</button>
+              </form>
+            <% } %>
+          </div>
+        </div>
+      </div>
+      <div class="header-bottom">
+        <div class="header-menu">
+          <div class="header-info">
+            <div class="header-title">Livros Didáticos</div>
+            <div class="header-subtitle">Entrega e devolução de livros didáticos</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="d-flex flex-fill mb-5" id="main">
+    <div class="container-lg d-flex">
+      <div class="col mb-5">
+        <div class="main-content mt-4" id="main-content">

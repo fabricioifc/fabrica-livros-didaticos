@@ -33,7 +33,12 @@ services:
       # A aplicação usa um login que só tem os privilégios do papel livros_app (sujeito a RLS).
       DATABASE_URL: postgres://livros_app_dev:livros_app_dev@db:5432/livros_dev
       DATABASE_MIGRATION_URL: postgres://livros:livros@db:5432/livros_dev
+      APP_URL: http://localhost:3000
+      # Valores lidos do arquivo .env da raiz (fora do Git; modelo em .env.example).
       BOOTSTRAP_ADMIN_EMAILS: ${BOOTSTRAP_ADMIN_EMAILS:-}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      SESSION_SECRET: ${SESSION_SECRET:-}
     volumes:
       - .:/app
       - node_modules:/app/node_modules   # dependências do Linux, separadas das do Windows

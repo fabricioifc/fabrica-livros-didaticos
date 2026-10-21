@@ -4,7 +4,7 @@ Gestão de entrega e devolução de livros didáticos do Instituto Federal Catar
 
 Documentação: [`AGENTS.md`](AGENTS.md) (regras e decisões), [`docs/requirements.md`](docs/requirements.md), [`docs/business-rules.md`](docs/business-rules.md), [`docs/architecture.md`](docs/architecture.md), [`docs/testing.md`](docs/testing.md).
 
-> Situação: base do servidor e módulo de acesso (regras e banco) prontos. Rotas de negócio, login com o Google e telas ainda não existem; hoje o servidor responde apenas `GET /saude`.
+> Situação: login com o Google, escolha de campus pelo servidor e área inicial do estudante funcionando. Aprovação de acessos pela tela, estoque, entregas e devoluções ainda não existem.
 
 ## Desenvolvimento com Docker
 
@@ -29,11 +29,11 @@ Na primeira vez, o container instala as dependências, aplica as migrações e c
 
 Sem `docker compose up` de novo, mudanças em `package.json` não são instaladas: rode `docker compose restart app`. Mudanças em `db/migrations` ou `db/seeds` também são aplicadas ao reiniciar o container `app`.
 
-Para que um e-mail vire o primeiro administrador institucional (quando o login existir), defina antes de subir:
+### Login com o Google
 
-```bash
-BOOTSTRAP_ADMIN_EMAILS=seu.email@ifc.edu.br npm run dev:up
-```
+Copie `.env.example` para `.env` e preencha as credenciais do cliente OAuth (URI de redirecionamento `http://localhost:3000/auth/callback`). O `compose.yaml` lê o `.env`. Acesse **<http://localhost:3000>** (use `localhost`, não `127.0.0.1`, para o retorno do Google funcionar).
+
+`BOOTSTRAP_ADMIN_EMAILS` define quem vira o primeiro administrador institucional no primeiro login, só enquanto não houver nenhum. Depois de alterar o `.env`, recrie o container: `docker compose up -d`.
 
 ### Como o ambiente está montado
 

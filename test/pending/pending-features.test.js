@@ -1,7 +1,7 @@
 // BACKLOG DE TESTES — funcionalidades ainda NÃO implementadas.
 // Aparecem como "todo" na saída do node:test; NÃO contam como aprovados.
 // Ao implementar a funcionalidade, mova o teste para test/unit ou test/integration
-// e escreva as asserções reais. Já implementados: módulo de acesso, inclusive RF-006 (test/integration/acesso-*.test.js). IDs: docs/business-rules.md (RN) e docs/requirements.md (CA).
+// e escreva as asserções reais. Já implementados: módulo de acesso RF-001 a RF-006 e rotas de login/sessão (test/integration/acesso-*.test.js, rotas-acesso.test.js). IDs: docs/business-rules.md (RN) e docs/requirements.md (CA).
 import { describe, test } from 'node:test';
 
 describe('PENDENTE — isolamento entre campi (obrigatório; AGENTS.md seção 13)', () => {
@@ -19,13 +19,8 @@ describe('PENDENTE — isolamento entre campi (obrigatório; AGENTS.md seção 1
 });
 
 describe('PENDENTE — autenticação, sessão e permissões', () => {
-  test.todo('rotas protegidas sem sessão redirecionam ao login (RNF-001)');
-  test.todo('callback OIDC valida o ID token (assinatura, emissor, audiência, nonce, PKCE) antes de classificar o domínio (RF-001)');
-  test.todo('rotas: servidor com solicitação pendente só vê a tela de aguardo (CA-002.1)');
-  test.todo('rotas: revogação vale na próxima requisição HTTP, sem esperar o fim da sessão (CA-004.1)');
-  test.todo('sessão encerrada (logout) não pode ser reutilizada (CA-008.1)');
-  test.todo('rotas: estudante sem cadastro vê só a mensagem "Cadastro não localizado…" (CA-006.1)');
-  test.todo('rotas: estudante não acessa nenhuma tela ou rota de servidor (CA-006.2)');
+  test.todo('callback OIDC com provedor real: assinatura, emissor, audiência, nonce e PKCE do ID token (hoje: openid-client + teste manual; os testes de rota usam provedor falso)');
+  test.todo('tela de aprovação de solicitações pelo admin do campus (RF-003 via HTTP)');
   test.todo('matriz de permissões AGENTS.md 6.2 testada por ação × papel × escopo');
   test.todo('Consulta e Estudante não preparam entrega nem por requisição direta (CA-040.7)');
   test.todo('estudante vê só os próprios dados e não tem ação de escrita (CA-064.2, CA-064.3)');

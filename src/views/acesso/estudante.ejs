@@ -1,0 +1,10 @@
+<%- include('../parciais/topo') %>
+<% if (!estudante) { %>
+  <h1>Área do estudante</h1>
+  <%- include('../parciais/mensagem', { tipo: 'warning', titulo: 'Cadastro não localizado.', corpo: 'Procure o setor responsável pelos livros do seu campus.' }) %>
+<% } else { %>
+  <h1>Olá, <%= estudante.nome %></h1>
+  <p>Matrícula: <%= estudante.matricula %></p>
+  <%- include('../parciais/mensagem', { tipo: 'info', titulo: 'Seus livros aparecerão aqui.', corpo: 'A consulta de livros, prazos e termos ainda está em desenvolvimento.' }) %>
+<% } %>
+<%- include('../parciais/rodape') %>

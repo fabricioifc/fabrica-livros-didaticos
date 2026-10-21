@@ -30,6 +30,19 @@ describe('carregarConfig', () => {
     assert.throws(() => carregarConfig({ DATABASE_URL: 'x', PORT: '70000' }), /PORT/);
   });
 
+  test('Google: ID e segredo vêm juntos; redirecionamento derivado de APP_URL', () => {
+    assert.equal(carregarConfig({ DATABASE_URL: 'x' }).google, null);
+    assert.throws(() => carregarConfig({ DATABASE_URL: 'x', GOOGLE_CLIENT_ID: 'id' }), /juntos/);
+    const c = carregarConfig({ DATABASE_URL: 'x', GOOGLE_CLIENT_ID: 'id', GOOGLE_CLIENT_SECRET: 's', APP_URL: 'https://livros.exemplo.teste/' });
+    assert.equal(c.google.redirectUri, 'https://livros.exemplo.teste/auth/callback');
+  });
+
+  test('em produção, SESSION_SECRET é obrigatória e longa', () => {
+    assert.throws(() => carregarConfig({ DATABASE_URL: 'x', NODE_ENV: 'production' }), /SESSION_SECRET/);
+    assert.throws(() => carregarConfig({ DATABASE_URL: 'x', NODE_ENV: 'production', SESSION_SECRET: 'curta' }), /SESSION_SECRET/);
+    assert.doesNotThrow(() => carregarConfig({ DATABASE_URL: 'x', NODE_ENV: 'production', SESSION_SECRET: 'x'.repeat(32) }));
+  });
+
   test('NODE_ENV fora da lista é recusado', () => {
     assert.throws(() => carregarConfig({ DATABASE_URL: 'x', NODE_ENV: 'staging' }), /NODE_ENV/);
   });

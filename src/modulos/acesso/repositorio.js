@@ -107,6 +107,32 @@ export async function revogarAtribuicao(db, id, revogadaPor) {
   return rows[0] ?? null;
 }
 
+export async function listarCampiAtivos(db) {
+  const { rows } = await db.query('SELECT id, nome_oficial, nome_curto FROM campus WHERE ativo ORDER BY nome_curto');
+  return rows;
+}
+
+export async function listarCampiPorId(db, ids) {
+  const { rows } = await db.query('SELECT id, nome_curto FROM campus WHERE id = ANY($1)', [ids]);
+  return rows;
+}
+
+// Última solicitação do próprio usuário (pendente ou a decisão mais recente).
+export async function buscarUltimaSolicitacao(db, usuarioId) {
+  const { rows } = await db.query(
+    `SELECT s.id, s.status, s.motivo_recusa, s.solicitada_em, c.nome_curto AS campus
+     FROM solicitacao_acesso s JOIN campus c ON c.id = s.campus_id
+     WHERE s.usuario_id = $1 ORDER BY s.solicitada_em DESC LIMIT 1`,
+    [usuarioId],
+  );
+  return rows[0] ?? null;
+}
+
+export async function buscarInstituicao(db) {
+  const { rows } = await db.query('SELECT nome_oficial, sigla FROM instituicao WHERE id = 1');
+  return rows[0] ?? null;
+}
+
 export async function buscarCampusAtivo(db, id) {
   const { rows } = await db.query('SELECT id, codigo, nome_curto FROM campus WHERE id = $1 AND ativo', [id]);
   return rows[0] ?? null;

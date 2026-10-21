@@ -1,6 +1,6 @@
 # Testes automatizados
 
-> Situação em 2026-10-21: **módulo de acesso implementado e testado** (RF-001 a RF-006, nas camadas de domínio, serviço e banco). Rotas HTTP, login com o Google e telas ainda não existem. As demais funcionalidades estão registradas como **pendentes** (`todo`) e **não contam como aprovadas**.
+> Situação em 2026-10-21: **módulo de acesso implementado e testado** (RF-001 a RF-006 e RF-008): domínio, serviço, banco e rotas HTTP (login com o Google, sessão, CSRF, telas iniciais). Nos testes de rota, só o Google é simulado (provedor falso); a validação real do ID token é da `openid-client` e foi conferida manualmente. As demais funcionalidades estão registradas como **pendentes** (`todo`) e **não contam como aprovadas**.
 > Estratégia de testes por risco: [`docs/architecture.md`](architecture.md), seção 12, e [`AGENTS.md`](../AGENTS.md), seção 13.
 
 ## Ferramentas
@@ -10,7 +10,8 @@
 | `node:test` (Node.js 24) | Executor de testes, asserções, `todo`/`skip` e cobertura (`--experimental-test-coverage`). Sem dependências extras. |
 | `pg` 8.23.1 | Acesso ao PostgreSQL (aplicação e testes). |
 | PostgreSQL 17 em Docker (`docker/compose.test.yml`) | Banco **exclusivo de testes**: porta `55432`, dados em memória (descartados ao parar o container). |
-| `supertest` e Playwright | **Ainda não instalados**: entram com as rotas HTTP e as telas. |
+| `fetch` nativo do Node | Testes de rota (sem `supertest`): o servidor sobe numa porta aleatória e o teste guarda o cookie de sessão. |
+| Playwright | **Ainda não instalado**: entra com os fluxos de interface (assinatura no celular). |
 
 ## Como executar
 
@@ -44,6 +45,7 @@ npm test
 |---|---|
 | `test/helpers/test-db.js` | Conexão ao banco de testes, trava de segurança e `withRollback` |
 | `test/helpers/banco-migrado.js` | Sobe o pool e aplica as migrações uma vez por arquivo (advisory lock evita corrida entre arquivos paralelos) |
+| `test/helpers/navegador.js` | Cliente HTTP com cookie de sessão e provedor de login falso |
 | `test/helpers/fixtures.js` | Dados fictícios: domínios, campi Alfa/Beta/Gama, servidores com cada papel, estudante |
 | `test/unit/acesso-dominio.test.js` | Regras puras: domínio de login, escopo do usuário, quem decide e quem concede papéis |
 | `test/unit/infra.test.js` | Configuração e montagem do escopo do banco (inclui recusa de identificadores não UUID) |
@@ -51,6 +53,7 @@ npm test
 | `test/integration/acesso-servico.test.js` | Casos de uso de acesso contra o banco real, com os critérios CA-001 a CA-005 |
 | `test/integration/acesso-estudante.test.js` | RF-006: ligação da conta ao cadastro, estudante sem cadastro, bloqueio de funções de servidor e RLS dos cadastros |
 | `test/integration/acesso-isolamento.test.js` | Tentativas de violar o isolamento **direto no banco** (RLS), imutabilidade e vazamento de contexto entre conexões |
+| `test/integration/rotas-acesso.test.js` | Rotas de ponta a ponta com sessão real: login, regeneração da sessão, state inválido, domínio recusado, XSS, CSRF, escolha de campus, revogação e desativação na hora, logout, estudante |
 | `test/integration/app.test.js` | Servidor HTTP: `GET /saude` (inclusive com banco fora do ar) e 404 padrão |
 | `test/integration/test-database.test.js` | Versão e conexão do banco, desfazimento de transações |
 | `test/docs/` | Consistência da documentação e regressões de decisões revogadas |
@@ -74,11 +77,11 @@ npm test
 
 | Métrica | Quantidade |
 |---|---|
-| Aprovados | 105 |
+| Aprovados | 122 |
 | Falhos | 0 |
 | Ignorados (`skip`) | 0 |
-| Pendentes (`todo`, funcionalidades não implementadas) | 75 |
-| Total | 180 |
+| Pendentes (`todo`, funcionalidades não implementadas) | 70 |
+| Total | 192 |
 
 Cobertura (`npm run test:coverage`), incluindo `test/helpers/`: 98,0% das linhas e 95,1% dos ramos; `servico.js` e `dominio.js` do acesso com 100% das linhas. Lacunas conhecidas:
 
@@ -98,6 +101,6 @@ Cobertura de linhas **não** prova correção: ela mostra o que foi executado, n
 ## Limitações conhecidas
 
 - A cobertura nativa do Node ainda é experimental (`--experimental-test-coverage`). Por padrão ela exclui arquivos em pastas `test/`; o script informa `--test-coverage-exclude` explicitamente.
-- Login com o Google, sessões e rotas ainda não existem: os testes de acesso validam a **identidade já recebida** do provedor, não o fluxo OIDC (pendente).
+- O fluxo OIDC real (assinatura e validade do ID token) não é testado automaticamente: os testes de rota usam um provedor falso. Foi verificado o redirecionamento ao Google (PKCE, state, nonce) e o login real é testado manualmente.
 - Os testes de documentação verificam estrutura e referências, não se o conteúdo das regras está correto.
 - Testes de integração exigem Docker; sem ele, falham com a mensagem "Banco de testes indisponível".

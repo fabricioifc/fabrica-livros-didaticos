@@ -1,0 +1,29 @@
+<%- include('../parciais/topo') %>
+<h1>Escolha seu campus</h1>
+<p>Para usar o sistema, informe em qual campus você trabalha. O administrador do campus vai confirmar o seu acesso.</p>
+<% if (recusa) { %>
+  <%- include('../parciais/mensagem', { tipo: 'warning', titulo: 'Sua solicitação anterior para o ' + recusa.campus + ' foi recusada.', corpo: 'Motivo: ' + recusa.motivo_recusa + '. Você pode solicitar novamente.' }) %>
+<% } %>
+<% if (typeof erro !== 'undefined' && erro) { %>
+  <%- include('../parciais/mensagem', { tipo: 'danger', titulo: erro, corpo: null }) %>
+<% } %>
+<% if (campi.length === 0) { %>
+  <%- include('../parciais/mensagem', { tipo: 'info', titulo: 'Nenhum campus disponível.', corpo: 'Procure o administrador do sistema.' }) %>
+<% } else { %>
+  <form method="post" action="/acesso/solicitacoes" class="mt-3">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <%# Radio: https://www.gov.br/ds/components/radio (exemplo radio-default, core 3.7.0); fieldset/legend para leitores de tela. %>
+    <fieldset>
+      <legend class="label mb-0">Campus</legend>
+      <% campi.forEach((c, i) => { %>
+        <div class="br-radio">
+          <input id="campus-<%= i %>" type="radio" name="campusId" value="<%= c.id %>" required>
+          <label for="campus-<%= i %>"><%= c.nome_oficial %></label>
+        </div>
+      <% }) %>
+    </fieldset>
+    <%# Button: https://www.gov.br/ds/components/button (exemplo button-emphasys, core 3.7.0). %>
+    <button class="br-button primary mt-3" type="submit">Solicitar acesso</button>
+  </form>
+<% } %>
+<%- include('../parciais/rodape') %>

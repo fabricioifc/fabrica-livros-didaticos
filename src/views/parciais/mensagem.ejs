@@ -1,0 +1,13 @@
+<%#
+  Message: https://www.gov.br/ds/components/message (exemplo message-padrao, core 3.7.0).
+  Sem o botão de fechar: ele depende do JavaScript do componente, que ainda não é carregado.
+  Parâmetros: tipo (danger|success|info|warning), titulo, corpo.
+%>
+<% const icones = { danger: 'fa-times-circle', success: 'fa-check-circle', info: 'fa-info-circle', warning: 'fa-exclamation-triangle' }; %>
+<div class="br-message <%= tipo %>">
+  <div class="icon"><i class="fas <%= icones[tipo] %> fa-lg" aria-hidden="true"></i></div>
+  <div class="content" role="<%= tipo === 'danger' ? 'alert' : 'status' %>">
+    <span class="message-title"><%= titulo %></span>
+    <% if (typeof corpo !== 'undefined' && corpo) { %><span class="message-body"> <%= corpo %></span><% } %>
+  </div>
+</div>
