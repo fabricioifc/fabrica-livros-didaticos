@@ -1,7 +1,7 @@
 // BACKLOG DE TESTES — funcionalidades ainda NÃO implementadas.
 // Aparecem como "todo" na saída do node:test; NÃO contam como aprovados.
 // Ao implementar a funcionalidade, mova o teste para test/unit ou test/integration
-// e escreva as asserções reais. Já implementados: módulo de acesso (test/integration/acesso-*.test.js). IDs: docs/business-rules.md (RN) e docs/requirements.md (CA).
+// e escreva as asserções reais. Já implementados: módulo de acesso, inclusive RF-006 (test/integration/acesso-*.test.js). IDs: docs/business-rules.md (RN) e docs/requirements.md (CA).
 import { describe, test } from 'node:test';
 
 describe('PENDENTE — isolamento entre campi (obrigatório; AGENTS.md seção 13)', () => {
@@ -24,6 +24,8 @@ describe('PENDENTE — autenticação, sessão e permissões', () => {
   test.todo('rotas: servidor com solicitação pendente só vê a tela de aguardo (CA-002.1)');
   test.todo('rotas: revogação vale na próxima requisição HTTP, sem esperar o fim da sessão (CA-004.1)');
   test.todo('sessão encerrada (logout) não pode ser reutilizada (CA-008.1)');
+  test.todo('rotas: estudante sem cadastro vê só a mensagem "Cadastro não localizado…" (CA-006.1)');
+  test.todo('rotas: estudante não acessa nenhuma tela ou rota de servidor (CA-006.2)');
   test.todo('matriz de permissões AGENTS.md 6.2 testada por ação × papel × escopo');
   test.todo('Consulta e Estudante não preparam entrega nem por requisição direta (CA-040.7)');
   test.todo('estudante vê só os próprios dados e não tem ação de escrita (CA-064.2, CA-064.3)');

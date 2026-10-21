@@ -35,6 +35,30 @@ export async function atualizarLogin(db, id, { email, nome }) {
   return rows[0];
 }
 
+// Estudante: apenas o necessário para identificar a pessoa na sessão (sem dados extras).
+const COLUNAS_ESTUDANTE = 'id, matricula, nome, usuario_id';
+
+export async function buscarEstudantePorUsuario(db, usuarioId) {
+  const { rows } = await db.query(`SELECT ${COLUNAS_ESTUDANTE} FROM estudante WHERE usuario_id = $1`, [usuarioId]);
+  return rows[0] ?? null;
+}
+
+export async function buscarEstudantePorEmail(db, email) {
+  const { rows } = await db.query(
+    `SELECT ${COLUNAS_ESTUDANTE} FROM estudante WHERE email_institucional = $1 FOR UPDATE`,
+    [email],
+  );
+  return rows[0] ?? null;
+}
+
+export async function ligarEstudanteAoUsuario(db, estudanteId, usuarioId) {
+  const { rows } = await db.query(
+    `UPDATE estudante SET usuario_id = $2 WHERE id = $1 AND usuario_id IS NULL RETURNING ${COLUNAS_ESTUDANTE}`,
+    [estudanteId, usuarioId],
+  );
+  return rows[0] ?? null;
+}
+
 export async function listarAtribuicoesVigentes(db, usuarioId) {
   const { rows } = await db.query(
     `SELECT ${COLUNAS_ATRIBUICAO} FROM atribuicao WHERE usuario_id = $1 AND revogada_em IS NULL`,

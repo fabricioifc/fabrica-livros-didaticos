@@ -17,20 +17,44 @@ function validar(esquema, valor) {
 
 const violouUnicidade = (err) => err?.code === '23505';
 
-// Contexto do usuário logado: { usuario, atribuicoes }. Atribuições sempre lidas do banco.
+// Contexto do usuário logado: { usuario, atribuicoes, estudante }. Sempre lido do banco.
+// `estudante` só existe para contas ESTUDANTE ligadas a um cadastro (RF-006).
 export async function carregarContexto(executor, usuarioId) {
   validar(uuid('Usuário'), usuarioId);
   return comContexto(executor, { usuarioId, campi: [] }, async (db) => {
     const usuario = await repo.buscarUsuario(db, usuarioId);
     if (!usuario?.ativo) throw new ErroNaoAutenticado('Sessão inválida.', 'SESSAO_INVALIDA');
-    const atribuicoes = await repo.listarAtribuicoesVigentes(db, usuarioId);
-    return { usuario, atribuicoes };
+    if (usuario.tipo === 'ESTUDANTE') {
+      return { usuario, atribuicoes: [], estudante: await repo.buscarEstudantePorUsuario(db, usuarioId) };
+    }
+    return { usuario, atribuicoes: await repo.listarAtribuicoesVigentes(db, usuarioId), estudante: null };
   });
+}
+
+// RF-006: liga a conta do estudante ao cadastro pelo e-mail institucional (no primeiro login).
+// Sem cadastro, devolve null: o estudante entra, mas não vê nenhum dado (CA-006.1).
+async function ligarEstudante(db, usuario) {
+  const ligado = await repo.buscarEstudantePorUsuario(db, usuario.id);
+  if (ligado) return ligado;
+  const cadastro = await repo.buscarEstudantePorEmail(db, usuario.email);
+  if (!cadastro) return null;
+  if (cadastro.usuario_id && cadastro.usuario_id !== usuario.id) {
+    // Outra conta já está ligada a este cadastro (ex.: conta do Google recriada): não troca sozinho.
+    throw new ErroNaoAutenticado(
+      'Seu cadastro está ligado a outra conta. Procure o setor responsável pelos livros do seu campus.',
+      'CADASTRO_LIGADO_A_OUTRA_CONTA',
+    );
+  }
+  const estudante = await repo.ligarEstudanteAoUsuario(db, cadastro.id, usuario.id);
+  await registrarAuditoria(db, {
+    usuarioId: usuario.id, acao: 'acesso.estudante_ligado', entidade: 'estudante', entidadeId: estudante.id,
+  });
+  return estudante;
 }
 
 const escopoDe = (ctx) => dominio.escopoDoUsuario(ctx.usuario.id, ctx.atribuicoes);
 
-// RF-001 e RF-005: registra o login de uma identidade do Google já validada pelo provedor.
+// RF-001, RF-005 e RF-006: registra o login de uma identidade do Google já validada pelo provedor.
 export async function registrarLogin(executor, claims, { emailsAdminInicial = [] } = {}) {
   return comContexto(executor, escopoSistema(), async (db) => {
     const identidade = dominio.classificarIdentidade(claims, await repo.listarDominios(db));
@@ -60,8 +84,10 @@ export async function registrarLogin(executor, claims, { emailsAdminInicial = []
         });
       }
     }
-    const atribuicoes = await repo.listarAtribuicoesVigentes(db, usuario.id);
-    return { usuario, atribuicoes };
+    if (usuario.tipo === 'ESTUDANTE') {
+      return { usuario, atribuicoes: [], estudante: await ligarEstudante(db, usuario) };
+    }
+    return { usuario, atribuicoes: await repo.listarAtribuicoesVigentes(db, usuario.id), estudante: null };
   });
 }
 

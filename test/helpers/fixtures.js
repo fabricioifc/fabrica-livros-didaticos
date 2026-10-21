@@ -37,6 +37,17 @@ export async function criarUsuario(db, { tipo = 'SERVIDOR', dominio, nome = 'Pes
   return rows[0];
 }
 
+// Cadastro de estudante (matrícula fictícia), opcionalmente já ligado a uma conta.
+export async function criarEstudante(db, { email, nome = 'Estudante Fictício', usuarioId = null } = {}) {
+  const s = sufixo();
+  const { rows } = await db.query(
+    `INSERT INTO estudante (matricula, nome, email_institucional, usuario_id) VALUES ($1, $2, $3, $4)
+     RETURNING id, matricula, nome, email_institucional, usuario_id`,
+    [`MAT${s}`, `${nome} ${s}`, email ?? `aluno.${s}@exemplo.teste`, usuarioId],
+  );
+  return rows[0];
+}
+
 export async function atribuir(db, usuarioId, papel, campusId = null) {
   const { rows } = await db.query(
     `INSERT INTO atribuicao (usuario_id, papel, campus_id) VALUES ($1, $2, $3)

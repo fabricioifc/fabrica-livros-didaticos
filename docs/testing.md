@@ -1,6 +1,6 @@
 # Testes automatizados
 
-> Situação em 2026-10-21: **módulo de acesso implementado e testado** (RF-001 a RF-005, nas camadas de domínio, serviço e banco). Rotas HTTP, login com o Google e telas ainda não existem. As demais funcionalidades estão registradas como **pendentes** (`todo`) e **não contam como aprovadas**.
+> Situação em 2026-10-21: **módulo de acesso implementado e testado** (RF-001 a RF-006, nas camadas de domínio, serviço e banco). Rotas HTTP, login com o Google e telas ainda não existem. As demais funcionalidades estão registradas como **pendentes** (`todo`) e **não contam como aprovadas**.
 > Estratégia de testes por risco: [`docs/architecture.md`](architecture.md), seção 12, e [`AGENTS.md`](../AGENTS.md), seção 13.
 
 ## Ferramentas
@@ -49,7 +49,9 @@ npm test
 | `test/unit/infra.test.js` | Configuração e montagem do escopo do banco (inclui recusa de identificadores não UUID) |
 | `test/unit/test-db-guard.test.js` | Trava que impede rodar testes fora do banco de testes |
 | `test/integration/acesso-servico.test.js` | Casos de uso de acesso contra o banco real, com os critérios CA-001 a CA-005 |
+| `test/integration/acesso-estudante.test.js` | RF-006: ligação da conta ao cadastro, estudante sem cadastro, bloqueio de funções de servidor e RLS dos cadastros |
 | `test/integration/acesso-isolamento.test.js` | Tentativas de violar o isolamento **direto no banco** (RLS), imutabilidade e vazamento de contexto entre conexões |
+| `test/integration/app.test.js` | Servidor HTTP: `GET /saude` (inclusive com banco fora do ar) e 404 padrão |
 | `test/integration/test-database.test.js` | Versão e conexão do banco, desfazimento de transações |
 | `test/docs/` | Consistência da documentação e regressões de decisões revogadas |
 | `test/policy/` | Regras do AGENTS.md verificáveis no repositório (sem `.env`, sem campus ou domínio fixo no código) |
@@ -72,16 +74,17 @@ npm test
 
 | Métrica | Quantidade |
 |---|---|
-| Aprovados | 90 |
+| Aprovados | 105 |
 | Falhos | 0 |
 | Ignorados (`skip`) | 0 |
-| Pendentes (`todo`, funcionalidades não implementadas) | 73 |
-| Total | 163 |
+| Pendentes (`todo`, funcionalidades não implementadas) | 75 |
+| Total | 180 |
 
-Cobertura (`npm run test:coverage`) do código em `src/`: 97,8% das linhas e 95,0% dos ramos. Lacunas conhecidas:
+Cobertura (`npm run test:coverage`), incluindo `test/helpers/`: 98,0% das linhas e 95,1% dos ramos; `servico.js` e `dominio.js` do acesso com 100% das linhas. Lacunas conhecidas:
 
 - `src/infra/db/migrar.js`: o caminho de falha de uma migração (rollback) não é testado; o corpo de aplicação só é coberto quando o banco está vazio.
 - `src/modulos/acesso/servico.js`: o repasse de erros de banco inesperados na solicitação de acesso.
+- `src/server.js` e `src/infra/db/cli-seed.js`: pontos de entrada, verificados manualmente no ambiente dev, sem teste automatizado.
 - `src/infra/db/cli-migrar.js`: comando de linha, sem teste.
 
 Cobertura de linhas **não** prova correção: ela mostra o que foi executado, não se cada regra foi verificada em todos os casos.
