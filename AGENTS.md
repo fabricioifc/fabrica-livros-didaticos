@@ -781,6 +781,8 @@ Internet ──HTTPS──> Caddy (TLS automático) ──> app (Node, container
 
 ## 13. Estratégia de testes
 
+Como executar, organização das pastas, regras para escrever testes e resultado da última execução: [`docs/testing.md`](docs/testing.md). Resumo: `npm ci`, `npm run db:test:up`, `npm test`.
+
 ### 13.1 Fixtures obrigatórias
 
 - Campi **Alfa** e **Beta** (ativos) e **Gama** (inativo).

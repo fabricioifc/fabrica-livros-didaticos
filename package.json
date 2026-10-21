@@ -1,0 +1,22 @@
+{
+  "name": "livros-didaticos",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Gestão de entrega e devolução de livros didáticos do Instituto Federal Catarinense (IFC).",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "test": "node --test \"test/**/*.test.js\"",
+    "test:unit": "node --test \"test/unit/**/*.test.js\" \"test/docs/**/*.test.js\" \"test/policy/**/*.test.js\"",
+    "test:integration": "node --test \"test/integration/**/*.test.js\"",
+    "test:pending": "node --test \"test/pending/**/*.test.js\"",
+    "test:coverage": "node --test --experimental-test-coverage --test-coverage-include=\"src/**\" --test-coverage-include=\"test/helpers/**\" --test-coverage-exclude=\"**/*.test.js\" \"test/**/*.test.js\"",
+    "db:test:up": "docker compose -f docker/compose.test.yml up -d --wait",
+    "db:test:down": "docker compose -f docker/compose.test.yml down"
+  },
+  "devDependencies": {
+    "pg": "8.23.1"
+  }
+}

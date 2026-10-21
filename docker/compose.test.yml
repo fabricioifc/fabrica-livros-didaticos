@@ -1,0 +1,22 @@
+# Banco de dados EXCLUSIVO para testes automatizados.
+# - Dados em memória (tmpfs): tudo é descartado quando o container para.
+# - Porta 55432 para não colidir com outros PostgreSQL locais (5432, 15432...).
+# - Credenciais de uso local e descartável; nunca reutilizar em outro ambiente.
+name: livros-didaticos-test
+
+services:
+  db-test:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: livros_test
+      POSTGRES_USER: livros_test
+      POSTGRES_PASSWORD: livros_test
+    ports:
+      - "127.0.0.1:55432:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U livros_test -d livros_test"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
