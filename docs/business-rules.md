@@ -22,6 +22,20 @@ Regras para agentes:
 
 Datas e prazos usam o fuso **America/Sao_Paulo**. "Até a data X" significa até 23:59:59 de X.
 
+## Situação da implementação
+
+> Atualizada em 2026-10-21 (commit `6343fe4`). Visão por requisito: [`requirements.md`](requirements.md), seção 0.
+
+| Regras | Situação | Onde |
+|---|---|---|
+| RN-06 (matrícula e e-mail únicos no IFC) | ✅ Implementada no banco e testada | Migração `002_estudante.sql`; `test/integration/acesso-estudante.test.js` |
+| RN-07 (estudante entra só com cadastro; somente consulta) | ✅ Implementada e testada | `servico.registrarLogin`; rotas e tela `estudante` |
+| RN-05 (só Operador e Admin do campus fazem entregas/devoluções) | 🟡 Papéis e permissões existem; entregas e devoluções ainda não | Módulo de acesso (`dominio.js`, matriz do AGENTS.md 6.2) |
+| RN-01 a RN-04 (campus da operação, imutabilidade, snapshot, quantidade) | 🟡 Base pronta (auditoria imutável, atribuição só revogável); aplicam-se aos módulos ainda não implementados | — |
+| Todas as demais (RN-08 a RN-79) | ⬜ Não implementadas | Dependem de vínculos, estoque, entregas, devoluções e termos |
+
+Ao implementar uma regra, atualize esta tabela e cite o ID nos testes.
+
 ---
 
 ## 1. Princípios gerais

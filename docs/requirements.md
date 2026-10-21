@@ -21,6 +21,77 @@
 
 ---
 
+## 0. Situação da implementação
+
+> Atualizada em 2026-10-21, no commit `6343fe4`. **Atualize esta seção a cada funcionalidade concluída** (e o teste de documentação garante que os IDs citados existem).
+> Legenda: ✅ implementado e testado · 🟡 parcial (ver observação) · ⬜ não iniciado. "Testado" = testes automatizados passando; telas também conferidas manualmente no ambiente dev.
+
+### 0.1 Requisitos funcionais
+
+| RF | Situação | Onde está | Observação |
+|---|---|---|---|
+| RF-001 Login institucional | ✅ | `src/infra/auth/google.js`, `src/modulos/acesso/` (`dominio.js` `classificarIdentidade`, `rotas.js` `/auth/*`) | OIDC com PKCE/state/nonce. Validação real do ID token pela `openid-client`; testes de rota usam provedor falso. Login real conferido manualmente. |
+| RF-002 Solicitar acesso | ✅ | `servico.solicitarAcesso`, `POST /acesso/solicitacoes`, tela `escolher-campus` | |
+| RF-003 Aprovar/recusar | ✅ | `servico.decidirSolicitacao`, `/acesso/solicitacoes/*`, telas `solicitacoes` e `solicitacao` | Ninguém decide a própria solicitação (D-17). |
+| RF-004 Gerenciar perfis | 🟡 | `servico.concederPapel`/`revogarAtribuicao`, `/acesso/campi/:id/equipe`, `/acesso/atribuicoes/:id/revogar` | Interface para Atendimento e Administração do campus. **Sem tela** para conceder Administração institucional ou Consulta institucional (o serviço já permite). D-18: papel de campus só para quem é da equipe. |
+| RF-005 Primeiro administrador | ✅ | `servico.registrarLogin` + `BOOTSTRAP_ADMIN_EMAILS` | Só enquanto não houver admin institucional ativo (D-17). |
+| RF-006 Acesso do estudante | ✅ | `servico.registrarLogin` (ligação por e-mail), migração 002, tela `estudante` | Mostra nome e matrícula; livros em posse dependem de RF-064. |
+| RF-007 Campus de trabalho | ⬜ | | Posterior. Hoje o servidor vê todos os campi em que tem papel. |
+| RF-008 Encerrar sessão | ✅ | `POST /auth/sair`, `src/infra/web/seguranca.js` | Sessões no PostgreSQL (migração 003); expiração por inatividade. |
+| RF-010 Cadastrar campi | 🟡 | tabela `campus` (migração 001), `db/seeds/dev/001_campi.sql` | Campi existem só por seed. **Sem tela** de cadastro/ativação. |
+| RF-011 Configurar o campus | 🟡 | tabela `campus_configuracao` | Tabela e RLS prontas; **sem tela**. |
+| RF-012 Períodos, cursos, turmas | ⬜ | | |
+| RF-020 a RF-022 Catálogo e adoções | ⬜ | | |
+| RF-025 a RF-028 Estoque | ⬜ | | |
+| RF-030 a RF-034 Estudantes e vínculos | 🟡 | tabela `estudante` (migração 002) | Só o cadastro global e a ligação com o login. Falta `vinculo_estudante`, importação, cadastro manual, consulta e encerramento de vínculo. |
+| RF-040 a RF-047 Entrega, assinatura, identificação | ⬜ | | Depende de estoque, estudantes/vínculos e termo. DV-19 (QR code) em aberto. |
+| RF-050 a RF-053 Devolução | ⬜ | | DV-20 (livro danificado) em aberto. |
+| RF-060 a RF-065 Prazos, pendências, histórico | ⬜ | | |
+| RF-070 a RF-073 Relatórios | ⬜ | | |
+| RF-080 a RF-082 Termos e documentos | ⬜ | | |
+| RF-090 Registrar auditoria | 🟡 | `src/infra/auditoria.js`, tabela `auditoria` (imutável) | Registra as ações do módulo de acesso; cada novo módulo deve registrar as suas. |
+| RF-091 Consultar auditoria | ⬜ | | Posterior. |
+| RF-095 Isolamento entre campi | 🟡 | `src/infra/db/contexto.js` (`comContexto`, `SET LOCAL ROLE livros_app`), políticas RLS nas migrações | Garantido e testado para as tabelas existentes (`test/integration/acesso-isolamento.test.js`, `rotas-administracao.test.js`). Cada nova tabela por campus precisa de RLS e testes. |
+
+### 0.2 Requisitos não funcionais
+
+| RNF | Situação | Observação |
+|---|---|---|
+| RNF-001, RNF-002 Autorização no servidor e no banco | 🟡 | Para o módulo de acesso. Padrão a seguir: serviço verifica papel + `comContexto` + RLS. |
+| RNF-003 CSRF, XSS, limite de login | ✅ | Token CSRF em todo POST, CSP restrita, escape no EJS, `LIMITE_LOGIN_15MIN` (padrão 300 por IP). |
+| RNF-004 Segredos fora do código | ✅ | `.env` (fora do Git) e `.env.example`; teste de política. |
+| RNF-005 HTTPS | ⬜ | Produção (Caddy) ainda não configurada. Cookie `Secure` já é ativado em produção. |
+| RNF-006 Expiração de sessão | ✅ | `SESSAO_INATIVIDADE_MINUTOS` (padrão 60). |
+| RNF-007, RNF-008 Minimização e dados fictícios | ✅ | Sem CPF; seeds com `@exemplo.invalid`. |
+| RNF-010 Sem dados pessoais em logs/URLs | 🟡 | Respeitado no código atual; sem verificação automática de logs. |
+| RNF-012 Imutabilidade | 🟡 | Auditoria imutável e atribuição só revogável. Entregas/devoluções ainda não existem. |
+| RNF-013, RNF-014 GovBR-DS e acessibilidade | 🟡 | Telas usam `@govbr-ds/core` 3.7.0 local. Falta: fonte **Rawline** (não instalada), JavaScript dos componentes (mensagens sem botão fechar), validação automática de acessibilidade. |
+| RNF-018 Responsividade | 🟡 | Tela de entrada conferida a 360 px; demais telas não verificadas formalmente. |
+| RNF-019 a RNF-023 Desempenho e disponibilidade | ⬜ | `GET /saude` existe; sem metas medidas nem monitoramento. |
+| RNF-024, RNF-025 Manutenção e configuração por dados | 🟡 | Testes automatizados e campi por seed; falta CI (GitHub Actions). |
+| RNF-026 Atualização e retorno de versão | ⬜ | Sem deploy de produção. |
+| RNF-028 Dispositivo pessoal | 🟡 | `no-store` e logout feitos; câmera ainda não usada. |
+| Demais RNF | ⬜ | |
+
+### 0.3 Infraestrutura pronta
+
+- **Banco:** migrações `001_acesso`, `002_estudante`, `003_sessao` (`npm run db:migrate`); seeds `db/seeds/` (base) e `db/seeds/dev/` (fictícios).
+- **Ambiente dev:** `compose.yaml` (`npm run dev:up`), login real com Google via `.env`. Ver `README.md`.
+- **Testes:** `node:test` + PostgreSQL real em Docker; provedor de login falso para rotas. Ver `docs/testing.md`.
+- **Padrões a reutilizar** em novos módulos: `src/modulos/acesso/` (`dominio.js` puro, `repositorio.js` SQL, `servico.js` com `comContexto` e auditoria, `rotas.js`), parciais EJS em `src/views/parciais/`, helpers de teste em `test/helpers/`.
+
+### 0.4 Próximos passos sugeridos (MVP, em ordem de dependência)
+
+1. RF-010/RF-011/RF-012: telas de campi, configuração do campus, períodos letivos, cursos e turmas.
+2. RF-020: catálogo de títulos.
+3. RF-025 a RF-028: estoque (entrada, baixa, ajuste, livro-razão).
+4. RF-030 a RF-033: vínculos de estudantes, importação CSV (DV-11 em aberto), cadastro manual, consulta.
+5. RF-080: termo de compromisso versionado.
+6. RF-046/RF-047 e RF-040 a RF-044: identificação, entrega e assinatura na tela.
+7. RF-050 a RF-053, RF-060 a RF-064, RF-070, RF-071, RF-081: devolução, pendências, relatórios e documentos.
+
+---
+
 ## 1. Objetivo e escopo
 
 ### 1.1 Problema

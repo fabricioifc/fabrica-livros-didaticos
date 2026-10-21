@@ -8,6 +8,8 @@
 
 ## 0. Como usar este documento
 
+- **Para continuar o trabalho:** a situação da implementação (o que está pronto, onde está o código, próximos passos) fica em [`docs/requirements.md`](docs/requirements.md), seção 0. Atualize-a ao concluir cada funcionalidade, junto com a tabela de situação de [`docs/business-rules.md`](docs/business-rules.md) e os resultados em [`docs/testing.md`](docs/testing.md).
+
 - Leia as seções 1 (contexto), 2 (regras obrigatórias) e 9 (isolamento e autorização) **antes de qualquer alteração**.
 - Leia também [`docs/architecture.md`](docs/architecture.md): camadas, módulos, rotas HTTP, tecnologias e decisões de arquitetura (A-xx). Quando `docs/data-model.md` existir, ele substitui o esboço SQL da seção 7.2.
 - Regras de negócio (entrega, assinatura, devolução, prazos, pendências, transferências, perdas) estão em [`docs/business-rules.md`](docs/business-rules.md), com IDs `RN-xx`. Em caso de divergência com este arquivo, prevalece o `business-rules.md`, que deve ser corrigido aqui também.
