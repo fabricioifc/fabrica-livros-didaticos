@@ -1,0 +1,14 @@
+<%- include('../parciais/topo') %>
+<p><a href="/termo">Voltar ao termo de compromisso</a></p>
+<h1>Termo de compromisso — versão <%= versao.versao %><%= vigente ? ' (vigente)' : '' %></h1>
+<p class="text-down-01">Publicada em <%= dataHora(versao.vigente_de) %> por <%= versao.publicado_por %>. Código de integridade (SHA-256): <code><%= versao.hash_texto %></code></p>
+<% if (!vigente) { %><%- include('../parciais/mensagem', { tipo: 'info', titulo: 'Versão anterior.', corpo: 'Continua valendo para as entregas preparadas enquanto estava vigente.' }) %><% } %>
+
+<h2 class="mt-4">Texto</h2>
+<%- include('texto', { texto: versao.texto, dados: null }) %>
+
+<% if (/\{[a-z]+\}/.test(versao.texto)) { %>
+  <h2 class="mt-4">Como fica para o estudante (exemplo com dados fictícios)</h2>
+  <div class="br-card"><div class="card-content"><%- include('texto', { texto: versao.texto, dados: EXEMPLO }) %></div></div>
+<% } %>
+<%- include('../parciais/rodape') %>

@@ -1,0 +1,31 @@
+<%- include('../parciais/topo') %>
+<p><a href="/">Voltar ao início</a></p>
+<h1>Termo de compromisso</h1>
+<p>Texto único para todos os campi, assinado pelo estudante na tela do dispositivo do servidor, no ato da entrega. Cada entrega guarda a versão que estava vigente quando foi preparada.</p>
+<% if (podePublicar) { %><p><a class="br-button primary" href="/termo/nova">Publicar nova versão</a></p><% } %>
+
+<% if (!vigente) { %>
+  <%- include('../parciais/mensagem', { tipo: 'warning', titulo: 'Nenhuma versão publicada.', corpo: 'As entregas só poderão ser preparadas depois que a administração institucional publicar o termo.' }) %>
+<% } else { %>
+  <h2 class="mt-4">Versão vigente: <%= vigente.versao %></h2>
+  <p class="text-down-01">Publicada em <%= dataHora(vigente.vigente_de) %> por <%= vigente.publicado_por %>.</p>
+  <%- include('texto', { texto: vigente.texto, dados: null }) %>
+
+  <h2 class="mt-4">Todas as versões</h2>
+  <%# Table: https://www.gov.br/ds/components/table (estrutura do exemplo table-irregular-1, core 3.7.0). %>
+  <div class="br-table" title="Versões do termo">
+    <table aria-label="Versões do termo de compromisso">
+      <thead><tr><th scope="col">Versão</th><th scope="col">Publicada em</th><th scope="col">Publicada por</th></tr></thead>
+      <tbody>
+        <% versoes.forEach((v) => { %>
+          <tr>
+            <td><a href="/termo/<%= v.id %>">Versão <%= v.versao %></a><%= v.id === vigente.id ? ' (vigente)' : '' %></td>
+            <td><%= dataHora(v.vigente_de) %></td>
+            <td><%= v.publicado_por %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+<% } %>
+<%- include('../parciais/rodape') %>

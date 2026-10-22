@@ -1,0 +1,5 @@
+<%# Texto do termo em parágrafos, sem interpretar HTML. Parâmetros: texto, dados (opcional, preenche os marcadores). %>
+<% const conteudo = typeof dados !== 'undefined' && dados ? preencher(texto, dados) : texto; %>
+<% paragrafos(conteudo).forEach((linhas) => { %>
+  <p><% linhas.forEach((linha, i) => { %><%= linha %><% if (i < linhas.length - 1) { %><br><% } %><% }) %></p>
+<% }) %>

@@ -6,7 +6,7 @@
   <% institucionais.forEach((p) => { %><li><%= nomes[p] %> — todos os campi</li><% }) %>
   <% acessos.forEach((a) => { %><li><strong><%= a.campus %>:</strong> <%= a.papeis.map((p) => nomes[p]).join(', ') %> · <a href="/campi/<%= a.campusId %>/estudantes" aria-label="Estudantes de <%= a.campus %>">estudantes</a> · <a href="/campi/<%= a.campusId %>/estoque" aria-label="Estoque de <%= a.campus %>">estoque</a></li><% }) %>
 </ul>
-<p><a class="br-button secondary" href="/catalogo">Catálogo de títulos</a></p>
+<p><a class="br-button secondary mr-2 mb-1" href="/catalogo">Catálogo de títulos</a><a class="br-button secondary mb-1" href="/termo">Termo de compromisso</a></p>
 <% if (pendentes !== null) { %>
   <h2>Administração</h2>
   <p>

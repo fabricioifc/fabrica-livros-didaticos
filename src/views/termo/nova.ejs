@@ -1,0 +1,31 @@
+<%- include('../parciais/topo') %>
+<p><a href="/termo">Voltar ao termo de compromisso</a></p>
+<h1>Publicar nova versão do termo</h1>
+<p>A nova versão vale para <strong>todos os campi</strong>, nas entregas preparadas a partir da publicação. Termos já assinados não mudam e as versões anteriores continuam consultáveis.<%= vigente ? ' O texto abaixo começa com a versão vigente (' + vigente.versao + ').' : '' %></p>
+<p>Você pode usar marcadores, trocados pelos dados de cada entrega:</p>
+<ul>
+  <% Object.entries(MARCADORES).forEach(([m, descricao]) => { %><li><code>{<%= m %>}</code>: <%= descricao %></li><% }) %>
+</ul>
+<p>Separe os parágrafos com uma linha em branco.</p>
+<% if (Object.keys(erros).length) { %>
+  <div class="mb-3"><%- include('../parciais/mensagem', { tipo: 'danger', titulo: 'Corrija os campos indicados.', corpo: null }) %></div>
+<% } %>
+<form method="post" action="/termo/nova">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <%# Textarea: https://www.gov.br/ds/components/textarea (exemplos textarea-default e textarea-states, core 3.7.0). %>
+  <div class="br-textarea<%= erros.texto ? ' danger' : '' %> mb-3">
+    <label for="texto">Texto do termo (obrigatório)</label>
+    <textarea id="texto" name="texto" rows="18" maxlength="20000" required
+      <% if (erros.texto) { %>aria-invalid="true" aria-describedby="texto-erro"<% } %>><%= valores.texto %></textarea>
+    <% if (erros.texto) { %><span class="feedback danger" role="alert" id="texto-erro"><i class="fas fa-times-circle" aria-hidden="true"></i><span><%= erros.texto %></span></span><% } %>
+  </div>
+  <%# Checkbox: https://www.gov.br/ds/components/checkbox (exemplo checkbox-default, core 3.7.0). %>
+  <div class="br-checkbox<%= erros.confirmacao ? ' danger' : '' %> mb-3">
+    <input id="confirmacao" name="confirmacao" type="checkbox" value="sim" required <%= valores.confirmacao === 'sim' ? 'checked' : '' %>>
+    <label for="confirmacao">Confirmo que esta versão passará a valer para as novas entregas de todos os campi e não poderá ser alterada depois.</label>
+    <% if (erros.confirmacao) { %><span class="feedback danger" role="alert"><i class="fas fa-times-circle" aria-hidden="true"></i><%= erros.confirmacao %></span><% } %>
+  </div>
+  <button class="br-button primary" type="submit">Publicar versão</button>
+  <a class="br-button secondary ml-2" href="/termo">Cancelar</a>
+</form>
+<%- include('../parciais/rodape') %>

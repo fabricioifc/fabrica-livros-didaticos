@@ -11,6 +11,7 @@ import { rotasDeOferta } from './modulos/campi/rotas-oferta.js';
 import { rotasDeCatalogo } from './modulos/catalogo/rotas.js';
 import { rotasDeEstoque } from './modulos/estoque/rotas.js';
 import { rotasDeEstudantes } from './modulos/estudantes/rotas.js';
+import { rotasDoTermo } from './modulos/termo/rotas.js';
 import { formularioComArquivo } from './infra/web/multipart.js';
 import { consumirAviso } from './infra/web/rotas.js';
 import { obterInstituicao } from './modulos/acesso/servico.js';
@@ -76,6 +77,7 @@ export function criarApp({ pool, config, provedor = null }) {
     app.use(rotasDeCatalogo({ pool }));
     app.use(rotasDeEstoque({ pool }));
     app.use(rotasDeEstudantes({ pool }));
+    app.use(rotasDoTermo({ pool }));
   }
 
   app.use((req, res) => {

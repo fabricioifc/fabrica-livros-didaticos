@@ -23,7 +23,7 @@
 
 ## 0. Situação da implementação
 
-> Atualizada em 2026-10-21 (RF-020, RF-025 a RF-028 e RF-030 a RF-033 concluídos após o commit `09297af`). **Atualize esta seção a cada funcionalidade concluída** (e o teste de documentação garante que os IDs citados existem).
+> Atualizada em 2026-10-21 (RF-020, RF-025 a RF-028 e RF-030 a RF-033 e RF-080 concluídos após o commit `09297af`). **Atualize esta seção a cada funcionalidade concluída** (e o teste de documentação garante que os IDs citados existem).
 > Legenda: ✅ implementado e testado · 🟡 parcial (ver observação) · ⬜ não iniciado. "Testado" = testes automatizados passando; telas também conferidas manualmente no ambiente dev.
 
 ### 0.1 Requisitos funcionais
@@ -50,7 +50,8 @@
 | RF-050 a RF-053 Devolução | ⬜ | | DV-20 (livro danificado) em aberto. |
 | RF-060 a RF-065 Prazos, pendências, histórico | ⬜ | | |
 | RF-070 a RF-073 Relatórios | ⬜ | | |
-| RF-080 a RF-082 Termos e documentos | ⬜ | | |
+| RF-080 Termo de compromisso | ✅ | `src/modulos/termo/`, rotas `/termo`, migração 010 | Versões imutáveis e numeradas, publicadas só pela administração institucional, com confirmação; hash SHA-256 calculado pelo banco; vigente = última publicada (`termo/servico.termoVigente`, para RF-040). Marcadores `{estudante}`, `{matricula}`, `{curso}`, `{serie}`, `{campus}`, `{livros}`, `{data}` preenchidos no termo assinado (RF-081); pré-visualização com dados fictícios. |
+| RF-081, RF-082 Documentos | ⬜ | | RF-081 com a assinatura (RF-042); RF-082 opcional (DV-15). |
 | RF-090 Registrar auditoria | 🟡 | `src/infra/auditoria.js`, tabela `auditoria` (imutável) | Registra as ações do módulo de acesso; cada novo módulo deve registrar as suas. |
 | RF-091 Consultar auditoria | ⬜ | | Posterior. |
 | RF-095 Isolamento entre campi | 🟡 | `src/infra/db/contexto.js` (`comContexto`, `SET LOCAL ROLE livros_app`), políticas RLS nas migrações | Garantido e testado para as tabelas existentes (`test/integration/acesso-isolamento.test.js`, `rotas-administracao.test.js`). Cada nova tabela por campus precisa de RLS e testes. |
@@ -77,16 +78,15 @@
 
 ### 0.3 Infraestrutura pronta
 
-- **Banco:** migrações `001_acesso` a `009_vinculos` (`npm run db:migrate`); seeds `db/seeds/` (base) e `db/seeds/dev/` (fictícios).
+- **Banco:** migrações `001_acesso` a `010_termo` (`npm run db:migrate`); seeds `db/seeds/` (base) e `db/seeds/dev/` (fictícios).
 - **Ambiente dev:** `compose.yaml` (`npm run dev:up`), login real com Google via `.env`. Ver `README.md`.
 - **Testes:** `node:test` + PostgreSQL real em Docker; provedor de login falso para rotas. Ver `docs/testing.md`.
 - **Padrões a reutilizar** em novos módulos: `src/modulos/acesso/` (`dominio.js` puro, `repositorio.js` SQL, `servico.js` com `comContexto` e auditoria, `rotas.js`), parciais EJS em `src/views/parciais/`, helpers de teste em `test/helpers/`.
 
 ### 0.4 Próximos passos sugeridos (MVP, em ordem de dependência)
 
-1. RF-080: termo de compromisso versionado.
-2. RF-046/RF-047 e RF-040 a RF-044: identificação, entrega e assinatura na tela.
-3. RF-050 a RF-053, RF-060 a RF-064, RF-070, RF-071, RF-081: devolução, pendências, relatórios e documentos.
+1. RF-046/RF-047 e RF-040 a RF-044: identificação, entrega e assinatura na tela.
+2. RF-050 a RF-053, RF-060 a RF-064, RF-070, RF-071, RF-081: devolução, pendências, relatórios e documentos.
 
 ---
 

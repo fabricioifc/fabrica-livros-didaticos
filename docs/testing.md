@@ -70,6 +70,9 @@ npm test
 | `test/integration/estudantes-servico.test.js` | RF-030 a RF-033: cadastro, edição, unicidade no IFC, um vínculo ativo, importação tudo ou nada (inclusive Windows-1252), consulta, encerramento, isolamento entre campi, RLS e imutabilidade |
 | `test/integration/rotas-estudantes.test.js` | Estudantes pela interface: CSRF (inclusive no envio de arquivo), busca sem dados pessoais na URL, importação com erros por linha, 403/404 |
 | `test/unit/estudantes-dominio.test.js` | Leitura do CSV (separador, aspas, codificação, cabeçalho), série, domínio do e-mail e encerramento |
+| `test/integration/termo-servico.test.js` | RF-080: versões, vigente, anterior consultável, hash pelo banco, permissões e imutabilidade |
+| `test/integration/rotas-termo.test.js` | Termo pela interface: CSRF, confirmação, texto escapado, 403/404 |
+| `test/unit/termo-dominio.test.js` | Texto do termo: normalização, limites, marcadores e parágrafos |
 | `test/integration/app.test.js` | Servidor HTTP: `GET /saude` (inclusive com banco fora do ar) e 404 padrão |
 | `test/integration/test-database.test.js` | Versão e conexão do banco, desfazimento de transações |
 | `test/docs/` | Consistência da documentação e regressões de decisões revogadas |
@@ -93,11 +96,11 @@ npm test
 
 | Métrica | Quantidade |
 |---|---|
-| Aprovados | 258 |
+| Aprovados | 267 |
 | Falhos | 0 |
 | Ignorados (`skip`) | 0 |
 | Pendentes (`todo`, funcionalidades não implementadas) | 63 |
-| Total | 321 |
+| Total | 330 |
 
 Cobertura (`npm run test:coverage`), incluindo `test/helpers/`: 98,0% das linhas e 95,1% dos ramos; `servico.js` e `dominio.js` do acesso com 100% das linhas. Lacunas conhecidas:
 

@@ -33,11 +33,13 @@ Datas e prazos usam o fuso **America/Sao_Paulo**. "Até a data X" significa até
 | RN-62 e RN-69 a RN-72 (estoque próprio de cada campus; entrada, baixa, ajuste; saldo nunca negativo) | ✅ Implementadas e testadas, inclusive concorrência | Migração `008_estoque.sql`; `src/modulos/estoque/` |
 | RN-06 (matrícula e e-mail únicos no IFC) | ✅ Implementada no banco e testada | Migrações `002_estudante.sql` e `009_vinculos.sql` (matrícula não muda); `test/integration/estudantes-servico.test.js` |
 | RN-08 a RN-11 (um vínculo ativo no IFC; mudança de série/curso atualiza o vínculo; vínculo encerrado consultável; importação tudo ou nada) | ✅ Implementadas e testadas | Migração `009_vinculos.sql`; `src/modulos/estudantes/` |
+| RN-29 (termo único, versionado, publicado pela administração institucional) | ✅ Implementada e testada | Migração `010_termo.sql`; `src/modulos/termo/` |
+| RN-23 (entrega usa a versão vigente na preparação) | 🟡 Versão vigente disponível (`termoVigente`); aplicada quando a entrega existir (RF-040) | `termo/servico.js` |
 | RN-46 (encerramento antecipa o prazo) | 🟡 Data do encerramento gravada e imutável; o prazo dos livros é calculado em RF-061 | `estudantes/servico.encerrarVinculo` |
 | RN-07 (estudante entra só com cadastro; somente consulta) | ✅ Implementada e testada | `servico.registrarLogin`; rotas e tela `estudante` |
 | RN-05 (só Operador e Admin do campus fazem entregas/devoluções) | 🟡 Papéis e permissões existem; entregas e devoluções ainda não | Módulo de acesso (`dominio.js`, matriz do AGENTS.md 6.2) |
 | RN-01 a RN-04 (campus da operação, imutabilidade, snapshot, quantidade) | 🟡 Base pronta (auditoria imutável, atribuição só revogável); aplicam-se aos módulos ainda não implementados | — |
-| Todas as demais (RN-12 a RN-45, RN-47 a RN-61, RN-63 a RN-68, RN-76 a RN-79) | ⬜ Não implementadas | Dependem de entregas, devoluções e termos |
+| Todas as demais (RN-12 a RN-22, RN-24 a RN-28, RN-30 a RN-45, RN-47 a RN-61, RN-63 a RN-68, RN-76 a RN-79) | ⬜ Não implementadas | Dependem de entregas, devoluções e termos |
 
 Ao implementar uma regra, atualize esta tabela e cite o ID nos testes.
 

@@ -4,7 +4,7 @@ Gestão de entrega e devolução de livros didáticos do Instituto Federal Catar
 
 Documentação: [`AGENTS.md`](AGENTS.md) (regras e decisões), [`docs/requirements.md`](docs/requirements.md), [`docs/business-rules.md`](docs/business-rules.md), [`docs/architecture.md`](docs/architecture.md), [`docs/testing.md`](docs/testing.md).
 
-> Situação: login com o Google, solicitação e aprovação de acesso por campus, gestão da equipe do campus, cadastro e configuração de campi, anos letivos e cursos, catálogo de títulos, estoque por campus, estudantes e vínculos (com importação de planilha) e área inicial do estudante funcionando. Entregas e devoluções ainda não existem.
+> Situação: login com o Google, solicitação e aprovação de acesso por campus, gestão da equipe do campus, cadastro e configuração de campi, anos letivos e cursos, catálogo de títulos, estoque por campus, estudantes e vínculos (com importação de planilha), termo de compromisso versionado e área inicial do estudante funcionando. Entregas e devoluções ainda não existem.
 
 ## Desenvolvimento com Docker
 
@@ -53,6 +53,7 @@ Dados de desenvolvimento (`db/seeds/dev/`), todos fictícios (AGENTS.md, regra 1
 | `004_catalogo.sql` | 4 títulos fictícios (sem ISBN, para não coincidir com livros reais) e seus componentes curriculares |
 | `005_estoque.sql` | Entradas fictícias dos títulos do seed 004, com quantidades diferentes por campus (só se o título ainda não tiver movimentação no campus) |
 | `006_vinculos.sql` | Domínio `estudantes.exemplo.invalid` como domínio de estudante (só no dev) e vínculos dos 3 estudantes fictícios: Helena e Igor em Fraiburgo, Júlia no Campus Exemplo |
+| `007_termo.sql` | Versão 1 **fictícia** do termo de compromisso (só se ainda não houver nenhuma versão) |
 | `002_pessoas.sql` | 7 servidores e 3 estudantes fictícios (e-mails `@exemplo.invalid`, que **não fazem login**): solicitações pendentes de Ana e Bruno (Fraiburgo) e Carla (Exemplo); equipes com Diego e Elisa (Fraiburgo) e Fábio e Gabriela (Exemplo) |
 
 Para testar a importação de estudantes: [`docs/exemplos/estudantes-ficticios.csv`](docs/exemplos/estudantes-ficticios.csv) (válida) e [`docs/exemplos/estudantes-com-erros.csv`](docs/exemplos/estudantes-com-erros.csv) (nada é importado e os erros aparecem por linha).
