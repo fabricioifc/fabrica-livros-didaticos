@@ -32,6 +32,25 @@
     </tbody>
   </table>
 </div>
-<h2 class="mt-4">Livros, entregas e devoluções</h2>
-<%- include('../parciais/mensagem', { tipo: 'info', titulo: 'Os livros em posse, as entregas e as devoluções aparecerão aqui quando o atendimento estiver disponível.', corpo: null }) %>
+<h2 class="mt-4">Entregas neste campus</h2>
+<% if (!entregas.length) { %>
+  <%- include('../parciais/mensagem', { tipo: 'info', titulo: 'Nenhuma entrega registrada.', corpo: null }) %>
+<% } else { %>
+  <div class="br-table" title="Entregas">
+    <table aria-label="Entregas do estudante neste campus">
+      <thead><tr><th scope="col">Preparada em</th><th scope="col">Situação</th><th scope="col">Livros</th><th scope="col">Série na data</th></tr></thead>
+      <tbody>
+        <% entregas.forEach((e) => { %>
+          <tr>
+            <td><a href="/entregas/<%= e.id %>"><%= new Date(e.preparada_em).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', dateStyle: 'short', timeStyle: 'short' }) %></a></td>
+            <td><%= STATUS_ENTREGA[e.status] %></td>
+            <td><%= e.itens %></td>
+            <td><%= e.snapshot_estudante.serie %>ª (<%= e.snapshot_estudante.anoLetivo %>)</td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+<% } %>
+<p class="mt-2 text-down-01">Livros em posse, prazos e devoluções aparecerão aqui quando a assinatura e a devolução estiverem disponíveis.</p>
 <%- include('../parciais/rodape') %>

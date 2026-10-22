@@ -1,0 +1,35 @@
+<%- include('../parciais/topo') %>
+<p><a href="/">Voltar ao início</a></p>
+<h1>Atendimento — <%= campus.nome_curto %></h1>
+
+<h2>Identificar o estudante</h2>
+<%# A matrícula vai por POST: não aparece na URL nem no histórico do navegador (regra 14). %>
+<form method="post" action="/campi/<%= campus.id %>/atendimento/identificar" class="col-md-6 px-0 mb-4">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <%- include('../parciais/campo', { id: 'matricula', nome: 'matricula', rotulo: 'Matrícula', valor: matricula, erro: erros.matricula, obrigatorio: true, maximo: 30, autocomplete: 'off', ajuda: 'Digite a matrícula e confira o nome, o curso e a série na próxima tela.' }) %>
+  <button class="br-button primary" type="submit">Identificar</button>
+</form>
+
+<h2>Entregas aguardando assinatura</h2>
+<% if (preparadas.length === 0) { %>
+  <%- include('../parciais/mensagem', { tipo: 'info', titulo: 'Nenhuma entrega aguardando assinatura.', corpo: null }) %>
+<% } else { %>
+  <p>Para retomar, identifique o estudante de novo pela matrícula. Também é possível cancelar.</p>
+  <%# Table: https://www.gov.br/ds/components/table (estrutura do exemplo table-irregular-1, core 3.7.0). %>
+  <div class="br-table" title="Entregas aguardando assinatura">
+    <table aria-label="Entregas aguardando assinatura">
+      <thead><tr><th scope="col">Estudante</th><th scope="col">Preparada em</th><th scope="col">Por</th><th scope="col">Ações</th></tr></thead>
+      <tbody>
+        <% preparadas.forEach((e) => { %>
+          <tr>
+            <td><%= e.snapshot_estudante.nome %></td>
+            <td><%= dataHora(e.preparada_em) %></td>
+            <td><%= e.preparada_por_nome %></td>
+            <td><a class="br-button secondary small" href="/entregas/<%= e.id %>" aria-label="Ver a entrega de <%= e.snapshot_estudante.nome %>">Ver</a></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+<% } %>
+<%- include('../parciais/rodape') %>

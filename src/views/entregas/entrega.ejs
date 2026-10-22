@@ -1,0 +1,25 @@
+<%- include('../parciais/topo') %>
+<p><a href="/campi/<%= entrega.campus_id %>/atendimento">Voltar ao atendimento</a> · <a href="/campi/<%= entrega.campus_id %>/estudantes/<%= entrega.estudante_id %>">Ficha do estudante</a></p>
+<h1>Entrega — <%= STATUS[entrega.status] %></h1>
+<dl>
+  <dt>Estudante</dt><dd><%= entrega.snapshot_estudante.nome %> · matrícula <%= entrega.snapshot_estudante.matricula %></dd>
+  <dt>Curso e série na data</dt><dd><%= entrega.snapshot_estudante.curso %> · <%= entrega.snapshot_estudante.serie %>ª série · ano letivo <%= entrega.snapshot_estudante.anoLetivo %></dd>
+  <dt>Campus</dt><dd><%= entrega.snapshot_unidade.nomeOficial %></dd>
+  <dt>Preparada</dt><dd><%= dataHora(entrega.preparada_em) %> por <%= entrega.preparada_por_nome %> (identificação: <%= FORMAS_IDENTIFICACAO[entrega.forma_identificacao].toLowerCase() %>)</dd>
+  <dt>Termo de compromisso</dt><dd>Versão <%= entrega.termo_versao %></dd>
+  <% if (entrega.cancelada_em) { %><dt>Cancelada</dt><dd><%= dataHora(entrega.cancelada_em) %> por <%= entrega.cancelada_por_nome %></dd><% } %>
+  <% if (entrega.avisos_confirmados.length) { %><dt>Avisos confirmados</dt><dd><%= entrega.avisos_confirmados.length %> livro(s) que o estudante já tinha em posse</dd><% } %>
+</dl>
+<h2 class="mt-4">Livros</h2>
+<ul><% itens.forEach((i) => { %><li><%= i.titulo %><%= i.volume ? ' — ' + i.volume : '' %> (<%= i.quantidade %> exemplar)</li><% }) %></ul>
+
+<% if (entrega.status === 'PREPARADA') { %>
+  <%- include('../parciais/mensagem', { tipo: 'info', titulo: 'Aguardando a assinatura do estudante.', corpo: 'O modo assinatura na tela será liberado na próxima versão. Não entregue os livros antes da assinatura.' }) %>
+  <% if (podeOperar) { %>
+    <form method="post" action="/entregas/<%= entrega.id %>/cancelar" class="mt-3">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button class="br-button secondary" type="submit">Cancelar entrega</button>
+    </form>
+  <% } %>
+<% } %>
+<%- include('../parciais/rodape') %>

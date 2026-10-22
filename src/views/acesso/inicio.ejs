@@ -4,7 +4,7 @@
 <h2>Seus acessos</h2>
 <ul>
   <% institucionais.forEach((p) => { %><li><%= nomes[p] %> — todos os campi</li><% }) %>
-  <% acessos.forEach((a) => { %><li><strong><%= a.campus %>:</strong> <%= a.papeis.map((p) => nomes[p]).join(', ') %> · <a href="/campi/<%= a.campusId %>/estudantes" aria-label="Estudantes de <%= a.campus %>">estudantes</a> · <a href="/campi/<%= a.campusId %>/estoque" aria-label="Estoque de <%= a.campus %>">estoque</a></li><% }) %>
+  <% acessos.forEach((a) => { %><li><strong><%= a.campus %>:</strong> <%= a.papeis.map((p) => nomes[p]).join(', ') %> · <% if (a.papeis.includes('OPERADOR') || a.papeis.includes('ADMIN_CAMPUS')) { %><a href="/campi/<%= a.campusId %>/atendimento" aria-label="Atendimento em <%= a.campus %>">atendimento</a> · <% } %><a href="/campi/<%= a.campusId %>/estudantes" aria-label="Estudantes de <%= a.campus %>">estudantes</a> · <a href="/campi/<%= a.campusId %>/estoque" aria-label="Estoque de <%= a.campus %>">estoque</a></li><% }) %>
 </ul>
 <p><a class="br-button secondary mr-2 mb-1" href="/catalogo">Catálogo de títulos</a><a class="br-button secondary mb-1" href="/termo">Termo de compromisso</a></p>
 <% if (pendentes !== null) { %>

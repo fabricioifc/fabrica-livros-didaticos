@@ -1,0 +1,54 @@
+<%- include('../parciais/topo') %>
+<p><a href="/campi/<%= campus.id %>/atendimento">Voltar ao atendimento</a></p>
+<h1>Atendimento</h1>
+
+<%# CA-046.1: conferência antes de seguir. Card: https://www.gov.br/ds/components/card (core 3.7.0). %>
+<div class="br-card mb-3">
+  <div class="card-content">
+    <p class="text-up-01 text-weight-semi-bold mb-1"><%= vinculo.nome %></p>
+    <p class="mb-0">Matrícula <%= vinculo.matricula %> · <%= vinculo.curso %> · <%= vinculo.serie %>ª série · ano letivo <%= vinculo.ano_letivo %></p>
+  </div>
+</div>
+<p>Confira se os dados são do estudante que está no balcão.</p>
+
+<% if (preparada) { %>
+  <%- include('../parciais/mensagem', { tipo: 'warning', titulo: 'Este estudante já tem uma entrega aguardando assinatura.', corpo: 'Conclua a assinatura ou cancele a entrega antes de preparar outra.' }) %>
+  <ul class="mt-3"><% itens.forEach((i) => { %><li><%= i.titulo %><%= i.volume ? ' — ' + i.volume : '' %></li><% }) %></ul>
+  <p><a class="br-button primary" href="/entregas/<%= preparada.id %>">Ver a entrega</a></p>
+<% } else if (!identificado) { %>
+  <%- include('../parciais/mensagem', { tipo: 'info', titulo: 'Identifique o estudante pela matrícula para preparar uma entrega.', corpo: null }) %>
+  <p class="mt-3"><a class="br-button primary" href="/campi/<%= campus.id %>/atendimento">Identificar</a></p>
+<% } else if (!termo) { %>
+  <%- include('../parciais/mensagem', { tipo: 'warning', titulo: 'Nenhuma versão do termo de compromisso foi publicada.', corpo: 'A administração institucional precisa publicar o termo antes das entregas.' }) %>
+<% } else if (disponiveis.length === 0) { %>
+  <%- include('../parciais/mensagem', { tipo: 'warning', titulo: 'Não há livros disponíveis no estoque deste campus.', corpo: null }) %>
+<% } else { %>
+  <h2 class="mt-4">Livros para entregar</h2>
+  <p>Um exemplar de cada título. A entrega só é efetivada quando o estudante assinar o termo; até lá o estoque não muda.</p>
+  <% if (Object.keys(erros).length && !erros.confirmacao) { %>
+    <div class="mb-3"><%- include('../parciais/mensagem', { tipo: 'danger', titulo: 'Corrija os campos indicados.', corpo: erros.titulos || null }) %></div>
+  <% } %>
+  <form method="post" action="/atendimento/<%= vinculo.id %>/entrega">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <%# Checkbox: https://www.gov.br/ds/components/checkbox (exemplo checkbox-default, core 3.7.0). %>
+    <fieldset class="mb-3">
+      <legend class="label mb-0">Escolha os livros (obrigatório)</legend>
+      <% disponiveis.forEach((t, i) => { %>
+        <div class="br-checkbox">
+          <input id="titulo-<%= i %>" name="titulos" type="checkbox" value="<%= t.id %>" <%= selecionados.includes(t.id) ? 'checked' : '' %>>
+          <label for="titulo-<%= i %>"><%= t.titulo %><%= t.volume ? ' — ' + t.volume : '' %>
+            (<%= t.abrangencia === 'SERIE_ESPECIFICA' ? t.serie + 'ª série' : 'ensino médio completo' %>; <%= t.disponivel %> disponível(is))<%= emPosse.has(t.id) ? ' — o estudante já tem este livro' : '' %></label>
+        </div>
+      <% }) %>
+    </fieldset>
+    <% if (erros.confirmacao) { %>
+      <%- include('../parciais/mensagem', { tipo: 'warning', titulo: 'Atenção: o estudante já tem em posse livro(s) escolhido(s).', corpo: 'Confirme abaixo para entregar mesmo assim. A confirmação fica registrada na entrega.' }) %>
+      <div class="br-checkbox my-3">
+        <input id="confirmacao" name="confirmacao" type="checkbox" value="sim" required>
+        <label for="confirmacao">Confirmo a entrega mesmo com o estudante já tendo esse(s) livro(s).</label>
+      </div>
+    <% } %>
+    <button class="br-button primary" type="submit">Preparar entrega</button>
+  </form>
+<% } %>
+<%- include('../parciais/rodape') %>

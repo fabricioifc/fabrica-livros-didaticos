@@ -9,6 +9,7 @@ import { registrarAuditoria } from '../../infra/auditoria.js';
 import { ErroConflito, ErroNaoEncontrado, ErroProibido, ErroValidacao } from '../../infra/erros.js';
 import { escopoDoContexto, temAcessoAoCampus, administraCampus } from '../acesso/servico.js';
 import { buscarCampusComConfiguracao } from '../campi/repositorio.js';
+import { entregasDosVinculos } from '../entregas/servico.js';
 import * as dominio from './dominio.js';
 import * as repo from './repositorio.js';
 
@@ -192,7 +193,10 @@ export async function obterEstudante(executor, ctx, campusId, estudanteId) {
     if (!vinculos.length) throw new ErroNaoEncontrado();
     const estudante = await repo.buscarEstudante(db, estudanteId);
     if (!estudante) throw new ErroNaoEncontrado();
-    return { campus, estudante, vinculos, ativo: vinculos.find((v) => v.situacao === 'ATIVO') ?? null, podeGerir: podeGerir(ctx, campusId) };
+    return {
+      campus, estudante, vinculos, ativo: vinculos.find((v) => v.situacao === 'ATIVO') ?? null, podeGerir: podeGerir(ctx, campusId),
+      entregas: await entregasDosVinculos(db, vinculos.map((v) => v.id)),
+    };
   });
 }
 

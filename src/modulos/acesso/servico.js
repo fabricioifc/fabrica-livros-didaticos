@@ -64,6 +64,10 @@ export const temAcessoDeServidor = (ctx) => ctx.usuario.tipo === 'SERVIDOR' && d
 // Vê os dados do campus: qualquer papel vigente nele ou escopo institucional (CA-027.2).
 export const temAcessoAoCampus = (ctx, campusId) => ctx.usuario.tipo === 'SERVIDOR'
   && (dominio.papeisNoCampus(ctx.atribuicoes, campusId).size > 0 || escopoDe(ctx).escopoInstitucional);
+// Opera o atendimento (entregas e devoluções): Operador ou Administração DO campus. A administração
+// institucional não opera sem atribuição no campus (AGENTS.md 6.1).
+export const operaCampus = (ctx, campusId) => ctx.usuario.tipo === 'SERVIDOR'
+  && ['OPERADOR', 'ADMIN_CAMPUS'].some((p) => dominio.papeisNoCampus(ctx.atribuicoes, campusId).has(p));
 // Administração institucional ou Administração de pelo menos um campus.
 export const administraAlgumCampus = (ctx) => ehAdministradorInstitucional(ctx)
   || (ctx.usuario.tipo === 'SERVIDOR' && dominio.vigentes(ctx.atribuicoes).some((a) => a.papel === 'ADMIN_CAMPUS'));

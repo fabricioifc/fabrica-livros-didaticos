@@ -3,6 +3,7 @@
 import { Router } from 'express';
 import { idDaUrl, exigirServidor, avisar } from '../../infra/web/rotas.js';
 import { SITUACOES, SITUACOES_ENCERRAMENTO, COLUNAS_PLANILHA } from './dominio.js';
+import { STATUS as STATUS_ENTREGA } from '../entregas/dominio.js';
 import * as estudantes from './servico.js';
 
 const texto = (v) => String(v ?? '');
@@ -16,7 +17,7 @@ export function rotasDeEstudantes({ pool }) {
   const r = Router();
   r.use(['/campi/:id/estudantes', '/vinculos'], exigirServidor);
   r.use(['/campi/:id/estudantes', '/vinculos'], (req, res, next) => {
-    Object.assign(res.locals, { SITUACOES, SITUACOES_ENCERRAMENTO, COLUNAS_PLANILHA, dataBr });
+    Object.assign(res.locals, { SITUACOES, SITUACOES_ENCERRAMENTO, COLUNAS_PLANILHA, STATUS_ENTREGA, dataBr });
     next();
   });
 

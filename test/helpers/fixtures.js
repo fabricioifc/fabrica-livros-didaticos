@@ -64,13 +64,43 @@ export async function criarOferta(db, campusId, { curso = 'Técnico Fictício', 
   return { curso: c.rows[0], ano: p.rows[0] };
 }
 
+// Estudante com vínculo (ativo, por padrão) no campus, com o curso e o ano letivo de criarOferta.
+export async function criarEstudanteComVinculo(db, { campusId, oferta, criadoPor, serie = 1, dominio = 'exemplo.teste' }) {
+  const e = await criarEstudante(db, { email: `aluno.${sufixo()}@${dominio}` });
+  const { rows } = await db.query(
+    `INSERT INTO vinculo_estudante (campus_id, estudante_id, curso_id, periodo_letivo_id, serie, criado_por)
+     VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+    [campusId, e.id, oferta.curso.id, oferta.ano.id, serie, criadoPor],
+  );
+  return { ...e, vinculoId: rows[0].id };
+}
+
+// Nova versão do termo (global): o número segue o mesmo bloqueio usado pela aplicação.
+export async function criarTermo(db, autorId) {
+  await db.query("SELECT pg_advisory_xact_lock(hashtext('termo_modelo.versao'))");
+  const { rows } = await db.query(
+    `INSERT INTO termo_modelo (versao, texto, hash_texto, publicado_por)
+     SELECT COALESCE(max(versao), 0) + 1, $1, '', $2 FROM termo_modelo RETURNING id, versao`,
+    [`Termo fictício ${sufixo()}: declaro que recebi {livros}.`, autorId],
+  );
+  return rows[0];
+}
+
+// Entrada de estoque (o gatilho da migração 008 atualiza o saldo).
+export async function darEntrada(db, { campusId, tituloId, quantidade, usuarioId }) {
+  await db.query(
+    "INSERT INTO movimentacao_estoque (campus_id, titulo_id, tipo, quantidade, origem, usuario_id) VALUES ($1, $2, 'ENTRADA', $3, 'Teste', $4)",
+    [campusId, tituloId, quantidade, usuarioId],
+  );
+}
+
 // Cadastro de estudante (matrícula fictícia), opcionalmente já ligado a uma conta.
 export async function criarEstudante(db, { email, nome = 'Estudante Fictício', usuarioId = null } = {}) {
   const s = sufixo();
   const { rows } = await db.query(
     `INSERT INTO estudante (matricula, nome, email_institucional, usuario_id) VALUES ($1, $2, $3, $4)
      RETURNING id, matricula, nome, email_institucional, usuario_id`,
-    [`MAT${s}`, `${nome} ${s}`, email ?? `aluno.${s}@exemplo.teste`, usuarioId],
+    [`MAT${s.toUpperCase()}`, `${nome} ${s}`, email ?? `aluno.${s}@exemplo.teste`, usuarioId],
   );
   return rows[0];
 }
