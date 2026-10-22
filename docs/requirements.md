@@ -23,7 +23,7 @@
 
 ## 0. Situação da implementação
 
-> Atualizada em 2026-10-21 (RF-012 concluído e simplificado — sem turmas — após o commit `217acad`). **Atualize esta seção a cada funcionalidade concluída** (e o teste de documentação garante que os IDs citados existem).
+> Atualizada em 2026-10-21 (RF-020 concluído após o commit `09297af`). **Atualize esta seção a cada funcionalidade concluída** (e o teste de documentação garante que os IDs citados existem).
 > Legenda: ✅ implementado e testado · 🟡 parcial (ver observação) · ⬜ não iniciado. "Testado" = testes automatizados passando; telas também conferidas manualmente no ambiente dev.
 
 ### 0.1 Requisitos funcionais
@@ -41,7 +41,8 @@
 | RF-010 Cadastrar campi | ✅ | `src/modulos/campi/`, rotas `/campi`, `/campi/novo`, `/campi/:id/ativar` e `/desativar`, migração 004 (RLS e trava de código/situação) | Só a administração institucional. Campus inativo some da escolha de campus; histórico mantido. |
 | RF-011 Configurar o campus | ✅ | `campi/servico.salvarConfiguracao`, rota `/campi/:id/configuracao` | Administração do campus edita nomes, endereço, contato e a regra RN-21 (a regra em si é aplicada na entrega, ainda não implementada). Código só pela administração institucional (D-19). |
 | RF-012 Anos letivos e cursos | ✅ | `src/modulos/campi/oferta*.js`, `rotas-oferta.js`, tela `/campi/:id/oferta`, migrações 005 e 006 | Simplificado (D-21): sem turmas nem semestres. Um ano letivo por ano em cada campus; o término é gravado e auditado (o cálculo de prazos é RF-061). Sem exclusão: correção por edição; curso sai de uso por desativação. |
-| RF-020 a RF-022 Catálogo e adoções | ⬜ | | |
+| RF-020 Catálogo de títulos | ✅ | `src/modulos/catalogo/`, rotas `/catalogo`, migração 007 | Busca, cadastro, detalhe e edição. ISBN-10/13 validado e normalizado; ISBN repetido aponta o existente (CA-020.1). Permissões num ponto único (`catalogo/servico.js`): criar = Administração de campus ou institucional; editar = só institucional (RN-75, proposta até DP-05). |
+| RF-021, RF-022 Mescla e adoções | ⬜ | | Posterior. A coluna `mesclado_em_id` já existe para a mescla. |
 | RF-025 a RF-028 Estoque | ⬜ | | |
 | RF-030 a RF-034 Estudantes e vínculos | 🟡 | tabela `estudante` (migração 002) | Só o cadastro global e a ligação com o login. Falta `vinculo_estudante`, importação, cadastro manual, consulta e encerramento de vínculo. |
 | RF-040 a RF-047 Entrega, assinatura, identificação | ⬜ | | Depende de estoque, estudantes/vínculos e termo. DV-19 (QR code) em aberto. |
@@ -75,19 +76,18 @@
 
 ### 0.3 Infraestrutura pronta
 
-- **Banco:** migrações `001_acesso` a `006_ano_letivo` (`npm run db:migrate`); seeds `db/seeds/` (base) e `db/seeds/dev/` (fictícios).
+- **Banco:** migrações `001_acesso` a `007_catalogo` (`npm run db:migrate`); seeds `db/seeds/` (base) e `db/seeds/dev/` (fictícios).
 - **Ambiente dev:** `compose.yaml` (`npm run dev:up`), login real com Google via `.env`. Ver `README.md`.
 - **Testes:** `node:test` + PostgreSQL real em Docker; provedor de login falso para rotas. Ver `docs/testing.md`.
 - **Padrões a reutilizar** em novos módulos: `src/modulos/acesso/` (`dominio.js` puro, `repositorio.js` SQL, `servico.js` com `comContexto` e auditoria, `rotas.js`), parciais EJS em `src/views/parciais/`, helpers de teste em `test/helpers/`.
 
 ### 0.4 Próximos passos sugeridos (MVP, em ordem de dependência)
 
-1. RF-020: catálogo de títulos (RF-010, RF-011 e RF-012 concluídos).
-2. RF-025 a RF-028: estoque (entrada, baixa, ajuste, livro-razão).
-3. RF-030 a RF-033: vínculos de estudantes, importação CSV (DV-11 em aberto), cadastro manual, consulta.
-4. RF-080: termo de compromisso versionado.
-5. RF-046/RF-047 e RF-040 a RF-044: identificação, entrega e assinatura na tela.
-6. RF-050 a RF-053, RF-060 a RF-064, RF-070, RF-071, RF-081: devolução, pendências, relatórios e documentos.
+1. RF-025 a RF-028: estoque (entrada, baixa, ajuste, livro-razão).
+2. RF-030 a RF-033: vínculos de estudantes, importação CSV (DV-11 em aberto), cadastro manual, consulta.
+3. RF-080: termo de compromisso versionado.
+4. RF-046/RF-047 e RF-040 a RF-044: identificação, entrega e assinatura na tela.
+5. RF-050 a RF-053, RF-060 a RF-064, RF-070, RF-071, RF-081: devolução, pendências, relatórios e documentos.
 
 ---
 
@@ -260,7 +260,7 @@ Cadastro de títulos compartilhados: ISBN, título, autores, editora, edição, 
 - CA-021.1 Após a mescla, o histórico de entregas e estoque do título duplicado aparece no título mantido; nada é apagado.
 
 **RF-022 — Registrar adoções do campus** · Posterior · RN-76
-O campus registra, por período letivo, quais títulos adota, para quais cursos/séries e com qual quantidade prevista.
+O campus registra, por ano letivo, quais títulos adota, para quais cursos/séries e com qual quantidade prevista.
 - CA-022.1 Campi diferentes podem adotar títulos e quantidades diferentes.
 - CA-022.2 Enquanto o campus não tiver adoções, o aviso de RF-041 (CA-041.2) não é exibido.
 

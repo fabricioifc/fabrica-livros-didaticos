@@ -1,0 +1,15 @@
+<%- include('../parciais/topo') %>
+<p><a href="/catalogo">Voltar ao catálogo</a></p>
+<h1><%= t.titulo %><%= t.volume ? ' — ' + t.volume : '' %></h1>
+<dl>
+  <dt>Autores</dt><dd><%= t.autores %></dd>
+  <dt>Abrangência</dt><dd><%= t.abrangencia === 'SERIE_ESPECIFICA' ? 'Série específica: ' + t.serie + 'ª série' : 'Ensino médio completo (uso nos três anos)' %></dd>
+  <dt>Componente curricular</dt><dd><%= t.componente || '—' %></dd>
+  <dt>ISBN</dt><dd><%= formatarIsbn(t.isbn13) || 'Sem ISBN' %></dd>
+  <dt>Editora</dt><dd><%= t.editora || '—' %></dd>
+  <dt>Edição</dt><dd><%= t.edicao || '—' %></dd>
+  <dt>Ano de publicação</dt><dd><%= t.ano_publicacao || '—' %></dd>
+  <dt>Código do programa (ex.: PNLD)</dt><dd><%= t.codigo_programa || '—' %></dd>
+</dl>
+<% if (podeEditar) { %><p><a class="br-button secondary" href="/catalogo/<%= t.id %>/editar">Editar título</a></p><% } %>
+<%- include('../parciais/rodape') %>

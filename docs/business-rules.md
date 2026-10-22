@@ -28,11 +28,13 @@ Datas e prazos usam o fuso **America/Sao_Paulo**. "Até a data X" significa até
 
 | Regras | Situação | Onde |
 |---|---|---|
+| RN-73 e RN-74 (catálogo compartilhado, ISBN único, abrangência e série) | ✅ Implementadas e testadas | Migração `007_catalogo.sql`; `src/modulos/catalogo/` |
+| RN-75 (quem cria e quem edita títulos) | 🟡 Implementada como proposta (DP-05 em aberto), num ponto único fácil de trocar | `catalogo/servico.js` (`podeCriar`, `podeEditar`) |
 | RN-06 (matrícula e e-mail únicos no IFC) | ✅ Implementada no banco e testada | Migração `002_estudante.sql`; `test/integration/acesso-estudante.test.js` |
 | RN-07 (estudante entra só com cadastro; somente consulta) | ✅ Implementada e testada | `servico.registrarLogin`; rotas e tela `estudante` |
 | RN-05 (só Operador e Admin do campus fazem entregas/devoluções) | 🟡 Papéis e permissões existem; entregas e devoluções ainda não | Módulo de acesso (`dominio.js`, matriz do AGENTS.md 6.2) |
 | RN-01 a RN-04 (campus da operação, imutabilidade, snapshot, quantidade) | 🟡 Base pronta (auditoria imutável, atribuição só revogável); aplicam-se aos módulos ainda não implementados | — |
-| Todas as demais (RN-08 a RN-79) | ⬜ Não implementadas | Dependem de vínculos, estoque, entregas, devoluções e termos |
+| Todas as demais (RN-08 a RN-72, RN-76 a RN-79) | ⬜ Não implementadas | Dependem de vínculos, estoque, entregas, devoluções e termos |
 
 Ao implementar uma regra, atualize esta tabela e cite o ID nos testes.
 

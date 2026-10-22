@@ -37,6 +37,13 @@ export async function criarUsuario(db, { tipo = 'SERVIDOR', dominio, nome = 'Pes
   return rows[0];
 }
 
+// ISBN-13 aleatório com dígito verificador válido (para não colidir entre testes paralelos).
+export function gerarIsbn() {
+  const doze = `978${String(Math.floor(Math.random() * 1e9)).padStart(9, '0')}`;
+  const soma = [...doze].reduce((acc, c, i) => acc + Number(c) * (i % 2 === 0 ? 1 : 3), 0);
+  return `${doze}${(10 - (soma % 10)) % 10}`;
+}
+
 // Cadastro de estudante (matrícula fictícia), opcionalmente já ligado a uma conta.
 export async function criarEstudante(db, { email, nome = 'Estudante Fictício', usuarioId = null } = {}) {
   const s = sufixo();

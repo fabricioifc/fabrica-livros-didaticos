@@ -1,0 +1,44 @@
+<%- include('../parciais/topo') %>
+<p><a href="/">Voltar ao início</a></p>
+<h1>Catálogo de títulos</h1>
+<p>Catálogo compartilhado por todos os campi. Cada campus controla o próprio estoque desses títulos.</p>
+<% if (podeCriar) { %><p><a class="br-button primary" href="/catalogo/novo">Cadastrar título</a></p><% } %>
+
+<form method="get" action="/catalogo" class="col-md-8 px-0 mb-3" role="search">
+  <%- include('../parciais/campo', { id: 'q', nome: 'q', rotulo: 'Buscar por título, autor, componente ou ISBN', tipo: 'search', valor: termo, maximo: 100 }) %>
+  <button class="br-button secondary" type="submit">Buscar</button>
+  <% if (termo) { %><a class="br-button secondary ml-2" href="/catalogo">Limpar busca</a><% } %>
+</form>
+
+<% if (titulos.length === 0) { %>
+  <%- include('../parciais/mensagem', { tipo: 'info', titulo: termo ? 'Nenhum título encontrado para a busca.' : 'O catálogo ainda está vazio.', corpo: null }) %>
+<% } else { %>
+  <%# Table: https://www.gov.br/ds/components/table (estrutura do exemplo table-irregular-1, core 3.7.0). %>
+  <div class="br-table" title="Títulos">
+    <div class="table-header">
+      <div class="top-bar"><div class="table-title"><%= total %> título(s)<%= termo ? ' encontrados' : '' %></div></div>
+    </div>
+    <table aria-label="Títulos do catálogo">
+      <thead><tr><th scope="col">Título</th><th scope="col">Componente</th><th scope="col">Abrangência</th><th scope="col">ISBN</th></tr></thead>
+      <tbody>
+        <% titulos.forEach((t) => { %>
+          <tr>
+            <td><a href="/catalogo/<%= t.id %>"><%= t.titulo %><%= t.volume ? ' — ' + t.volume : '' %></a><br><span class="text-down-01"><%= t.autores %></span></td>
+            <td><%= t.componente || '—' %></td>
+            <td><%= t.abrangencia === 'SERIE_ESPECIFICA' ? t.serie + 'ª série' : 'Ensino médio completo' %></td>
+            <td><%= formatarIsbn(t.isbn13) || '—' %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+  <% if (paginas > 1) { %>
+    <% const link = (p) => '/catalogo?pagina=' + p + (termo ? '&q=' + encodeURIComponent(termo) : ''); %>
+    <nav class="mt-3" aria-label="Paginação do catálogo">
+      <% if (pagina > 1) { %><a class="br-button secondary small" href="<%= link(pagina - 1) %>">Anterior</a><% } %>
+      <span class="mx-2">Página <%= pagina %> de <%= paginas %></span>
+      <% if (pagina < paginas) { %><a class="br-button secondary small" href="<%= link(pagina + 1) %>">Próxima</a><% } %>
+    </nav>
+  <% } %>
+<% } %>
+<%- include('../parciais/rodape') %>

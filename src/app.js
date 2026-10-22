@@ -8,6 +8,7 @@ import { cabecalhosDeSeguranca, sessoes, semCache, protecaoCsrf, NOME_COOKIE } f
 import { carregarUsuario, rotasDeAcesso } from './modulos/acesso/rotas.js';
 import { rotasDeCampi } from './modulos/campi/rotas.js';
 import { rotasDeOferta } from './modulos/campi/rotas-oferta.js';
+import { rotasDeCatalogo } from './modulos/catalogo/rotas.js';
 import { consumirAviso } from './infra/web/rotas.js';
 import { obterInstituicao } from './modulos/acesso/servico.js';
 
@@ -68,6 +69,7 @@ export function criarApp({ pool, config, provedor = null }) {
     app.use(rotasDeAcesso({ pool, config, provedor }));
     app.use(rotasDeCampi({ pool }));
     app.use(rotasDeOferta({ pool }));
+    app.use(rotasDeCatalogo({ pool }));
   }
 
   app.use((req, res) => {

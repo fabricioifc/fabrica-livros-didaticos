@@ -61,6 +61,9 @@ npm test
 | `test/integration/oferta-servico.test.js` | RF-012: anos letivos e cursos; um ano por campus; RLS; sem exclusão; turmas não existem mais (migração 006) |
 | `test/integration/rotas-oferta.test.js` | RF-012 pela interface, com edição de ano letivo e curso por URL de outro campus |
 | `test/unit/oferta-dominio.test.js` | Validação do ano, das datas e do nome do curso |
+| `test/integration/catalogo-servico.test.js` | RF-020: cadastro, ISBN repetido (inclusive como ISBN-10), série específica, busca, permissões (RN-75) e reforço no banco |
+| `test/integration/rotas-catalogo.test.js` | RF-020 pela interface: CSRF, ISBN repetido com link, erros juntos, 403/404, XSS |
+| `test/unit/catalogo-dominio.test.js` | ISBN-10/13 (dígitos e conversão) e regra de abrangência/série |
 | `test/integration/app.test.js` | Servidor HTTP: `GET /saude` (inclusive com banco fora do ar) e 404 padrão |
 | `test/integration/test-database.test.js` | Versão e conexão do banco, desfazimento de transações |
 | `test/docs/` | Consistência da documentação e regressões de decisões revogadas |
@@ -84,11 +87,11 @@ npm test
 
 | Métrica | Quantidade |
 |---|---|
-| Aprovados | 181 |
+| Aprovados | 206 |
 | Falhos | 0 |
 | Ignorados (`skip`) | 0 |
 | Pendentes (`todo`, funcionalidades não implementadas) | 69 |
-| Total | 250 |
+| Total | 275 |
 
 Cobertura (`npm run test:coverage`), incluindo `test/helpers/`: 98,0% das linhas e 95,1% dos ramos; `servico.js` e `dominio.js` do acesso com 100% das linhas. Lacunas conhecidas:
 
@@ -103,6 +106,7 @@ Cobertura de linhas **não** prova correção: ela mostra o que foi executado, n
 
 | Data | Defeito | Correção |
 |---|---|---|
+| 2026-10-21 | No cadastro de título, com ISBN inválido o erro da série não aparecia: o zod não executa refinamentos de objeto quando um campo falha, então o usuário só via um erro por vez. | Validação da abrangência/série em esquema separado e erros mesclados; teste de regressão. |
 | 2026-10-21 | `CHECK` da recusa de solicitação aceitava motivo `NULL` (`length(NULL)` é `NULL`, e `CHECK` nulo passa). O mesmo padrão estava no esboço de `devolucao_item` do AGENTS.md. | `COALESCE(length(trim(...)), 0) > 0` na migração 001 e no AGENTS.md; teste de regressão com `NULL`, vazio e só espaços. |
 
 ## Limitações conhecidas

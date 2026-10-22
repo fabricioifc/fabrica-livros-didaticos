@@ -1,0 +1,36 @@
+<%- include('../parciais/topo') %>
+<p><a href="<%= item ? '/catalogo/' + item.id : '/catalogo' %>">Voltar</a></p>
+<h1><%= item ? 'Editar título' : 'Cadastrar título' %></h1>
+<% if (!item) { %><p>Antes de cadastrar, <a href="/catalogo">busque no catálogo</a>: o título pode já ter sido cadastrado por outro campus.</p><% } %>
+<% if (Object.keys(erros).length) { %>
+  <div class="mb-3"><%- include('../parciais/mensagem', { tipo: 'danger', titulo: 'Corrija os campos indicados.', corpo: null }) %></div>
+  <% if (erros.existenteId) { %><p><a class="br-button secondary" href="/catalogo/<%= erros.existenteId %>">Ver o título já cadastrado</a></p><% } %>
+<% } %>
+<form method="post" action="<%= item ? '/catalogo/' + item.id : '/catalogo' %>" class="col-md-8 px-0">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <%- include('../parciais/campo', { id: 'titulo', nome: 'titulo', rotulo: 'Título', valor: valores.titulo, erro: erros.titulo, obrigatorio: true, maximo: 300 }) %>
+  <%- include('../parciais/campo', { id: 'autores', nome: 'autores', rotulo: 'Autores', valor: valores.autores, erro: erros.autores, obrigatorio: true, maximo: 300, ajuda: 'Separe os nomes por vírgula.' }) %>
+  <%- include('../parciais/campo', { id: 'isbn', nome: 'isbn', rotulo: 'ISBN', valor: valores.isbn, erro: erros.isbn, maximo: 20, ajuda: '10 ou 13 dígitos, com ou sem hífens. Deixe em branco se o material não tiver ISBN.' }) %>
+
+  <%# Radio: https://www.gov.br/ds/components/radio (exemplo radio-default, core 3.7.0). %>
+  <fieldset class="mb-3">
+    <legend class="label mb-0">Abrangência (obrigatório)</legend>
+    <% Object.entries(ABRANGENCIAS).forEach(([valor, rotulo], i) => { %>
+      <div class="br-radio">
+        <input id="abrangencia-<%= i %>" type="radio" name="abrangencia" value="<%= valor %>" required <%= valores.abrangencia === valor ? 'checked' : '' %>>
+        <label for="abrangencia-<%= i %>"><%= rotulo %></label>
+      </div>
+    <% }) %>
+    <% if (erros.abrangencia) { %><span class="feedback danger" role="alert"><i class="fas fa-times-circle" aria-hidden="true"></i><%= erros.abrangencia %></span><% } %>
+  </fieldset>
+  <%- include('../parciais/campo', { id: 'serie', nome: 'serie', rotulo: 'Série', tipo: 'number', valor: valores.serie, erro: erros.serie, ajuda: 'Obrigatória para série específica (1 a 4). Deixe em branco para ensino médio completo.' }) %>
+
+  <%- include('../parciais/campo', { id: 'componente', nome: 'componente', rotulo: 'Componente curricular', valor: valores.componente, erro: erros.componente, maximo: 100, ajuda: 'Ex.: Matemática.' }) %>
+  <%- include('../parciais/campo', { id: 'volume', nome: 'volume', rotulo: 'Volume', valor: valores.volume, erro: erros.volume, maximo: 50, ajuda: 'Ex.: Volume único, Volume 1.' }) %>
+  <%- include('../parciais/campo', { id: 'editora', nome: 'editora', rotulo: 'Editora', valor: valores.editora, erro: erros.editora, maximo: 150 }) %>
+  <%- include('../parciais/campo', { id: 'edicao', nome: 'edicao', rotulo: 'Edição', valor: valores.edicao, erro: erros.edicao, maximo: 50 }) %>
+  <%- include('../parciais/campo', { id: 'anoPublicacao', nome: 'anoPublicacao', rotulo: 'Ano de publicação', tipo: 'number', valor: valores.anoPublicacao, erro: erros.anoPublicacao }) %>
+  <%- include('../parciais/campo', { id: 'codigoPrograma', nome: 'codigoPrograma', rotulo: 'Código do programa (ex.: PNLD)', valor: valores.codigoPrograma, erro: erros.codigoPrograma, maximo: 50 }) %>
+  <button class="br-button primary" type="submit"><%= item ? 'Salvar' : 'Cadastrar título' %></button>
+</form>
+<%- include('../parciais/rodape') %>

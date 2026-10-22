@@ -59,6 +59,11 @@ export const escopoDoContexto = (ctx) => escopoDe(ctx);
 export const ehAdministradorInstitucional = (ctx) => ctx.usuario.tipo === 'SERVIDOR' && dominio.ehAdminInstitucional(ctx.atribuicoes);
 // Administra o campus: Administração do campus naquele campus ou administração institucional.
 export const administraCampus = (ctx, campusId) => ctx.usuario.tipo === 'SERVIDOR' && dominio.podeDecidirSolicitacao(ctx.atribuicoes, campusId);
+// Servidor com qualquer papel vigente (em algum campus ou institucional).
+export const temAcessoDeServidor = (ctx) => ctx.usuario.tipo === 'SERVIDOR' && dominio.vigentes(ctx.atribuicoes).length > 0;
+// Administração institucional ou Administração de pelo menos um campus.
+export const administraAlgumCampus = (ctx) => ehAdministradorInstitucional(ctx)
+  || (ctx.usuario.tipo === 'SERVIDOR' && dominio.vigentes(ctx.atribuicoes).some((a) => a.papel === 'ADMIN_CAMPUS'));
 
 // RF-001, RF-005 e RF-006: registra o login de uma identidade do Google já validada pelo provedor.
 export async function registrarLogin(executor, claims, { emailsAdminInicial = [] } = {}) {
