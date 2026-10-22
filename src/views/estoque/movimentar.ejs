@@ -1,0 +1,42 @@
+<%- include('../parciais/topo') %>
+<% const base = '/campi/' + campus.id + '/estoque/titulos/' + titulo.id; %>
+<p><a href="<%= base %>">Voltar</a></p>
+<h1><%= TIPOS_MANUAIS[tipo].titulo %></h1>
+<p><strong><%= titulo.titulo %><%= titulo.volume ? ' — ' + titulo.volume : '' %></strong> · estoque de <%= campus.nome_curto %> · disponíveis agora: <%= saldo.disponivel %></p>
+<% if (tipo === 'BAIXA') { %><p>Use a baixa para livros do acervo do campus perdidos, extraviados ou danificados. Livros que estão com estudantes são tratados na devolução.</p><% } %>
+<% if (tipo === 'AJUSTE') { %><p>Use o ajuste para corrigir a diferença encontrada na contagem física.</p><% } %>
+<% if (Object.keys(erros).length) { %>
+  <div class="mb-3"><%- include('../parciais/mensagem', { tipo: 'danger', titulo: 'Corrija os campos indicados.', corpo: null }) %></div>
+<% } %>
+<form method="post" action="<%= base %>/<%= TIPOS_MANUAIS[tipo].caminho %>" class="col-md-6 px-0">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <% if (tipo === 'AJUSTE') { %>
+    <%# Radio: https://www.gov.br/ds/components/radio (exemplo radio-default, core 3.7.0). %>
+    <fieldset class="mb-3">
+      <legend class="label mb-0">A contagem física encontrou (obrigatório)</legend>
+      <% [['ACRESCIMO', 'Livros a mais que o saldo do sistema'], ['REDUCAO', 'Livros a menos que o saldo do sistema']].forEach(([valor, rotulo], i) => { %>
+        <div class="br-radio">
+          <input id="sentido-<%= i %>" type="radio" name="sentido" value="<%= valor %>" required <%= valores.sentido === valor ? 'checked' : '' %>>
+          <label for="sentido-<%= i %>"><%= rotulo %></label>
+        </div>
+      <% }) %>
+      <% if (erros.sentido) { %><span class="feedback danger" role="alert"><i class="fas fa-times-circle" aria-hidden="true"></i><%= erros.sentido %></span><% } %>
+    </fieldset>
+  <% } %>
+  <%- include('../parciais/campo', { id: 'quantidade', nome: 'quantidade', rotulo: tipo === 'AJUSTE' ? 'Diferença (quantidade de exemplares)' : 'Quantidade de exemplares', tipo: 'number', valor: valores.quantidade, erro: erros.quantidade, obrigatorio: true }) %>
+  <% if (tipo === 'ENTRADA') { %>
+    <%- include('../parciais/campo', { id: 'origem', nome: 'origem', rotulo: 'Origem', valor: valores.origem, erro: erros.origem, obrigatorio: true, maximo: 200, ajuda: 'Ex.: recebimento do PNLD 2027, doação.' }) %>
+  <% } else { %>
+    <%# Textarea: https://www.gov.br/ds/components/textarea (exemplos textarea-default e textarea-states, core 3.7.0). %>
+    <div class="br-textarea<%= erros.justificativa ? ' danger' : '' %> mb-3">
+      <label for="justificativa">Justificativa (obrigatório)</label>
+      <textarea id="justificativa" name="justificativa" maxlength="500" required
+        aria-describedby="justificativa-ajuda<%= erros.justificativa ? ' justificativa-erro' : '' %>"<% if (erros.justificativa) { %> aria-invalid="true"<% } %>><%= valores.justificativa %></textarea>
+      <p class="text-base mt-1" id="justificativa-ajuda">Explique o motivo. Ela fica registrada no histórico e não pode ser alterada.</p>
+      <% if (erros.justificativa) { %><span class="feedback danger" role="alert" id="justificativa-erro"><i class="fas fa-times-circle" aria-hidden="true"></i><span><%= erros.justificativa %></span></span><% } %>
+    </div>
+  <% } %>
+  <button class="br-button primary" type="submit"><%= TIPOS_MANUAIS[tipo].titulo %></button>
+  <a class="br-button secondary ml-2" href="<%= base %>">Cancelar</a>
+</form>
+<%- include('../parciais/rodape') %>

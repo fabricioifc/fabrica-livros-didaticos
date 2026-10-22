@@ -123,17 +123,22 @@ describe('RF-006 — isolamento dos cadastros de estudantes (RLS)', () => {
     });
   }));
 
-  test('servidor de campus ainda não enxerga cadastros (até existir o vínculo com o campus)', emTransacao(async (db) => {
+  // Desde a migração 009 (RF-031), a Administração do campus cria cadastros, mas só enxerga
+  // estudantes com vínculo no seu campus (CA-032.1); os vínculos são testados em estudantes-servico.test.js.
+  test('servidor de campus não enxerga cadastros sem vínculo com o seu campus', emTransacao(async (db) => {
     const c = await cenarioDoisCampi(db);
     await criarEstudante(db, { email: `fabi@${c.dominios.estudante}` });
     const escopoAdminAlfa = escopoDoUsuario(c.adminAlfa.id, (await contextoDe(db, c.adminAlfa)).atribuicoes);
     await comContexto(db, escopoAdminAlfa, async (t) => {
       assert.equal((await t.query('SELECT count(*)::int AS n FROM estudante')).rows[0].n, 0);
+      // O cadastro recém-criado continua invisível até ganhar o vínculo.
+      await t.query("INSERT INTO estudante (matricula, nome, email_institucional) VALUES ('X1', 'X', $1)", [`x@${c.dominios.estudante}`]);
+      assert.equal((await t.query("SELECT count(*)::int AS n FROM estudante WHERE matricula = 'X1'")).rows[0].n, 0);
     });
-    // Tentativa de escrita em contexto próprio: a falha desfaz só este contexto.
+    // Sem nenhum campus no escopo, não cria.
     await assert.rejects(
-      comContexto(db, escopoAdminAlfa, (t) =>
-        t.query("INSERT INTO estudante (matricula, nome, email_institucional) VALUES ('X1', 'X', $1)", [`x@${c.dominios.estudante}`])),
+      comContexto(db, { usuarioId: c.semAcesso.id, campi: [] }, (t) =>
+        t.query("INSERT INTO estudante (matricula, nome, email_institucional) VALUES ('X2', 'X', $1)", [`y@${c.dominios.estudante}`])),
       (err) => err.code === '42501',
     );
   }));

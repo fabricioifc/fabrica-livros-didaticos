@@ -1,0 +1,17 @@
+<%#
+  Grupo de opções: https://www.gov.br/ds/components/radio (exemplo radio-default, core 3.7.0).
+  Usado no lugar do Select enquanto o JavaScript do GovBR-DS não é carregado (D-20).
+  Parâmetros: id, nome, legenda, opcoes ([valor, rotulo][]), valor, erro (opcional), obrigatorio.
+%>
+<fieldset class="mb-3">
+  <legend class="label mb-0"><%= legenda %><%= (typeof obrigatorio !== 'undefined' && obrigatorio) ? ' (obrigatório)' : '' %></legend>
+  <% opcoes.forEach(([v, rotulo], i) => { %>
+    <div class="br-radio">
+      <input id="<%= id %>-<%= i %>" type="radio" name="<%= nome %>" value="<%= v %>"
+        <%= String(valor ?? '') === String(v) ? 'checked' : '' %>
+        <% if (typeof obrigatorio !== 'undefined' && obrigatorio) { %>required<% } %>>
+      <label for="<%= id %>-<%= i %>"><%= rotulo %></label>
+    </div>
+  <% }) %>
+  <% if (typeof erro !== 'undefined' && erro) { %><span class="feedback danger" role="alert"><i class="fas fa-times-circle" aria-hidden="true"></i><%= erro %></span><% } %>
+</fieldset>

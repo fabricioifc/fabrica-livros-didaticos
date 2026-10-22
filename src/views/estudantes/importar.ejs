@@ -1,0 +1,40 @@
+<%- include('../parciais/topo') %>
+<p><a href="/campi/<%= campus.id %>/estudantes">Voltar aos estudantes</a></p>
+<h1>Importar estudantes — <%= campus.nome_curto %></h1>
+<p>Envie uma planilha CSV (no Excel: <em>Salvar como › CSV</em>). A primeira linha deve ter os nomes das colunas:</p>
+<p><code><%= COLUNAS_PLANILHA.join(';') %></code> · <a href="/campi/<%= campus.id %>/estudantes/modelo.csv">baixar modelo</a></p>
+<ul>
+  <li><strong>curso</strong>: nome de um curso ativo do campus<%= cursos.length ? ' (' + cursos.map((c) => c.nome).join(', ') + ')' : '' %>;</li>
+  <li><strong>serie</strong>: de 1 a 4; <strong>ano_letivo</strong>: um ano cadastrado no campus<%= anos.length ? ' (' + anos.map((a) => a.ano).join(', ') + ')' : '' %>;</li>
+  <li><strong>email</strong>: e-mail institucional de estudante.</li>
+</ul>
+<p>Se houver <strong>qualquer</strong> linha com erro, nada é importado e os erros são listados abaixo. Estudantes já cadastrados neste campus têm os dados atualizados; os que não estão na planilha não são alterados.</p>
+
+<% if (erroArquivo) { %>
+  <div class="mb-3"><%- include('../parciais/mensagem', { tipo: 'danger', titulo: 'Nada foi importado.', corpo: erroArquivo }) %></div>
+<% } %>
+<% if (erros.length) { %>
+  <div class="mb-3"><%- include('../parciais/mensagem', { tipo: 'danger', titulo: 'Nada foi importado.', corpo: 'Corrija ' + (erros.length === 1 ? 'o erro' : 'os ' + erros.length + ' erros') + ' na planilha e envie de novo.' }) %></div>
+  <%# Table: https://www.gov.br/ds/components/table (estrutura do exemplo table-irregular-1, core 3.7.0). %>
+  <div class="br-table mb-3" title="Erros da planilha">
+    <table aria-label="Erros encontrados na planilha">
+      <thead><tr><th scope="col">Linha</th><th scope="col">Problema</th></tr></thead>
+      <tbody>
+        <% erros.slice(0, 500).forEach((e) => { %><tr><td><%= e.linha %></td><td><%= e.mensagem %></td></tr><% }) %>
+      </tbody>
+    </table>
+  </div>
+  <% if (erros.length > 500) { %><p>Mostrando os primeiros 500 erros.</p><% } %>
+<% } %>
+
+<form method="post" action="/campi/<%= campus.id %>/estudantes/importar" enctype="multipart/form-data" class="col-md-8 px-0">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <%# Campo de arquivo nativo: o componente Upload do GovBR-DS depende do JavaScript do DS, ainda não carregado (D-20). %>
+  <div class="br-input mb-3">
+    <label for="arquivo">Planilha CSV (obrigatório)</label>
+    <input id="arquivo" name="arquivo" type="file" accept=".csv,text/csv" required aria-describedby="arquivo-ajuda">
+    <p id="arquivo-ajuda">Até 2 MB e <%= 5000 %> estudantes por arquivo. Use apenas dados fictícios até a aprovação do uso de dados reais.</p>
+  </div>
+  <button class="br-button primary" type="submit">Importar planilha</button>
+</form>
+<%- include('../parciais/rodape') %>

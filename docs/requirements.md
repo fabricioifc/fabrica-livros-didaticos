@@ -23,7 +23,7 @@
 
 ## 0. Situação da implementação
 
-> Atualizada em 2026-10-21 (RF-020 concluído após o commit `09297af`). **Atualize esta seção a cada funcionalidade concluída** (e o teste de documentação garante que os IDs citados existem).
+> Atualizada em 2026-10-21 (RF-020, RF-025 a RF-028 e RF-030 a RF-033 concluídos após o commit `09297af`). **Atualize esta seção a cada funcionalidade concluída** (e o teste de documentação garante que os IDs citados existem).
 > Legenda: ✅ implementado e testado · 🟡 parcial (ver observação) · ⬜ não iniciado. "Testado" = testes automatizados passando; telas também conferidas manualmente no ambiente dev.
 
 ### 0.1 Requisitos funcionais
@@ -43,8 +43,9 @@
 | RF-012 Anos letivos e cursos | ✅ | `src/modulos/campi/oferta*.js`, `rotas-oferta.js`, tela `/campi/:id/oferta`, migrações 005 e 006 | Simplificado (D-21): sem turmas nem semestres. Um ano letivo por ano em cada campus; o término é gravado e auditado (o cálculo de prazos é RF-061). Sem exclusão: correção por edição; curso sai de uso por desativação. |
 | RF-020 Catálogo de títulos | ✅ | `src/modulos/catalogo/`, rotas `/catalogo`, migração 007 | Busca, cadastro, detalhe e edição. ISBN-10/13 validado e normalizado; ISBN repetido aponta o existente (CA-020.1). Permissões num ponto único (`catalogo/servico.js`): criar = Administração de campus ou institucional; editar = só institucional (RN-75, proposta até DP-05). |
 | RF-021, RF-022 Mescla e adoções | ⬜ | | Posterior. A coluna `mesclado_em_id` já existe para a mescla. |
-| RF-025 a RF-028 Estoque | ⬜ | | |
-| RF-030 a RF-034 Estudantes e vínculos | 🟡 | tabela `estudante` (migração 002) | Só o cadastro global e a ligação com o login. Falta `vinculo_estudante`, importação, cadastro manual, consulta e encerramento de vínculo. |
+| RF-025 a RF-028 Estoque | ✅ | `src/modulos/estoque/`, rotas `/campi/:id/estoque`, migração 008 | Entrada (com origem), baixa e ajuste (com justificativa), consulta por título e histórico do campus. O saldo só muda por movimentação: um gatilho aplica cada uma ao saldo e o banco recusa saldo negativo, inclusive sob concorrência (D-23). Consultam: papéis do campus e escopo institucional; movimentam: Administração do campus ou institucional. A coluna "com estudantes" (CA-027.1) entra com as entregas (RF-040+). |
+| RF-030 a RF-033 Estudantes e vínculos | ✅ | `src/modulos/estudantes/`, rotas `/campi/:id/estudantes` e `/vinculos/:id/encerrar`, migração 009 | Importação CSV tudo ou nada com erros por linha (formato proposto para DV-11: `matricula;nome;email;curso;serie;ano_letivo`), cadastro manual, edição, busca (por POST, sem dados pessoais na URL), ficha com vínculos e encerramento. Matrícula já cadastrada no IFC é reaproveitada; vínculo ativo em outro campus impede (transferência é RF-034). Livros e entregas na ficha entram com RF-040+; o prazo pelo encerramento (RN-46), com RF-061. |
+| RF-034 Transferir estudante | ⬜ | | Posterior (DV-07, DV-17). |
 | RF-040 a RF-047 Entrega, assinatura, identificação | ⬜ | | Depende de estoque, estudantes/vínculos e termo. DV-19 (QR code) em aberto. |
 | RF-050 a RF-053 Devolução | ⬜ | | DV-20 (livro danificado) em aberto. |
 | RF-060 a RF-065 Prazos, pendências, histórico | ⬜ | | |
@@ -76,18 +77,16 @@
 
 ### 0.3 Infraestrutura pronta
 
-- **Banco:** migrações `001_acesso` a `007_catalogo` (`npm run db:migrate`); seeds `db/seeds/` (base) e `db/seeds/dev/` (fictícios).
+- **Banco:** migrações `001_acesso` a `009_vinculos` (`npm run db:migrate`); seeds `db/seeds/` (base) e `db/seeds/dev/` (fictícios).
 - **Ambiente dev:** `compose.yaml` (`npm run dev:up`), login real com Google via `.env`. Ver `README.md`.
 - **Testes:** `node:test` + PostgreSQL real em Docker; provedor de login falso para rotas. Ver `docs/testing.md`.
 - **Padrões a reutilizar** em novos módulos: `src/modulos/acesso/` (`dominio.js` puro, `repositorio.js` SQL, `servico.js` com `comContexto` e auditoria, `rotas.js`), parciais EJS em `src/views/parciais/`, helpers de teste em `test/helpers/`.
 
 ### 0.4 Próximos passos sugeridos (MVP, em ordem de dependência)
 
-1. RF-025 a RF-028: estoque (entrada, baixa, ajuste, livro-razão).
-2. RF-030 a RF-033: vínculos de estudantes, importação CSV (DV-11 em aberto), cadastro manual, consulta.
-3. RF-080: termo de compromisso versionado.
-4. RF-046/RF-047 e RF-040 a RF-044: identificação, entrega e assinatura na tela.
-5. RF-050 a RF-053, RF-060 a RF-064, RF-070, RF-071, RF-081: devolução, pendências, relatórios e documentos.
+1. RF-080: termo de compromisso versionado.
+2. RF-046/RF-047 e RF-040 a RF-044: identificação, entrega e assinatura na tela.
+3. RF-050 a RF-053, RF-060 a RF-064, RF-070, RF-071, RF-081: devolução, pendências, relatórios e documentos.
 
 ---
 
@@ -555,7 +554,7 @@ As referências `DP-xx` são do AGENTS.md (seção 16). Os identificadores são 
 |---|---|---|---|---|
 | DV-19 | **QR code de identificação:** onde o estudante obtém o QR code (exibido na área do estudante no celular dele, impresso na carteirinha ou outro)? Ele expira? Se for impresso, como invalidar um código perdido? Estudantes sem celular usam a digitação da matrícula? | RF-047, RF-064 | Responsável do projeto / CGE | Nova |
 | DV-20 | Livro **danificado** devolvido volta ao estoque disponível ou é baixado? (proposta: baixado) | RF-050 | CGE | DP-10 |
-| DV-11 | Formato da planilha de estudantes (colunas, inclusão do e-mail institucional). | RF-030 | Registro Acadêmico / CGE | DP-03 |
+| DV-11 | Formato da planilha de estudantes (colunas, inclusão do e-mail institucional). Implementado como proposta, aceita pelo responsável do projeto em 2026-10-21: CSV com cabeçalho `matricula;nome;email;curso;serie;ano_letivo` (";" ou ",", UTF-8 ou Windows-1252); a confirmar com o Registro Acadêmico. Troca só em `estudantes/dominio.js`. | RF-030 | Registro Acadêmico / CGE | DP-03 |
 | DV-12 | Volumes reais (estudantes, livros, campi) e horários de atendimento; metas de disponibilidade e recuperação aceitáveis. | RNF-016, RNF-019, RNF-021, RNF-023 | CGE / DTI | Nova |
 | DV-16 | Quem serão os administradores institucionais e o administrador do Campus Fraiburgo? | Implantação | Gestão | DP-06 |
 | DV-08 | Quem edita e mescla títulos do catálogo compartilhado? | RF-020, RF-021 | PROEN / Bibliotecas | DP-05 |

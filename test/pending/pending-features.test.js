@@ -10,10 +10,9 @@ describe('PENDENTE — isolamento entre campi (obrigatório; AGENTS.md seção 1
   test.todo('gravar com campus_id do campus B por usuário do campus A → 403 e auditoria (CA-095.2)');
   test.todo('trocar campus de trabalho, campo oculto ou URL para campus não atribuído → 403 (CA-095.3)');
   test.todo('entrega do campus A referenciando vínculo do campus B é recusada também pelo banco (FK composta)');
-  test.todo('RLS das tabelas de estoque, estudantes, entregas e devoluções (as do módulo de acesso já são testadas)');
+  test.todo('RLS das tabelas de entregas e devoluções (acesso, campi, catálogo, estoque e estudantes já são testadas)');
   test.todo('relatórios, pendências, históricos e documentos respeitam o escopo do usuário (CA-070.2)');
   test.todo('exportação CSV respeita filtros e escopo (CA-071.1)');
-  test.todo('catálogo é visível a todos, mas estoque e movimentações de outro campus não (RN-73, CA-027.2)');
   test.todo('relatório consolidado só para perfis institucionais; total = soma dos campi (CA-072.1, CA-072.2)');
   test.todo('admin institucional não registra entrega sem atribuição de campus (AGENTS.md 6.1)');
 });
@@ -79,14 +78,6 @@ describe('PENDENTE — prazos, pendências e histórico', () => {
   test.todo('devoluções parciais múltiplas não geram contagem duplicada');
   test.todo('histórico do estudante em ordem cronológica com campus e responsável (CA-063.1)');
   test.todo('documentos mantêm o snapshot após mudança de dados do campus (RN-03, CA-081.2)');
-});
-
-describe('PENDENTE — estoque, estudantes e catálogo', () => {
-  test.todo('saldo nunca negativo; estoque = soma do livro-razão (RN-72, CA-027.1)');
-  test.todo('baixa e ajuste exigem justificativa (RN-70, RN-71, CA-026.1)');
-  test.todo('importação tudo ou nada, com erros por linha (RN-11, CA-030.1)');
-  test.todo('matrícula e e-mail únicos no IFC; um vínculo ativo por estudante (RN-06, RN-08, CA-031.1, CA-031.2)');
-  test.todo('ISBN único reaproveita o título existente (RN-73, CA-020.1)');
 });
 
 describe('PENDENTE — interface (Playwright, quando houver frontend)', () => {

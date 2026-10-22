@@ -1,0 +1,19 @@
+<%- include('../parciais/topo') %>
+<p><a href="/campi/<%= campus.id %>/estoque">Voltar ao estoque</a> · <a href="/catalogo/<%= titulo.id %>">Ficha no catálogo</a></p>
+<h1><%= titulo.titulo %><%= titulo.volume ? ' — ' + titulo.volume : '' %></h1>
+<p>Estoque de <strong><%= campus.nome_curto %></strong> · <%= titulo.autores %><%= titulo.isbn13 ? ' · ISBN ' + formatarIsbn(titulo.isbn13) : '' %></p>
+<dl>
+  <dt>Disponíveis</dt><dd><%= saldo.disponivel %></dd>
+  <dt>Baixados (perda, extravio ou dano no acervo)</dt><dd><%= saldo.baixados %></dd>
+</dl>
+<% if (podeMovimentar) { %>
+  <p>
+    <% Object.values(TIPOS_MANUAIS).forEach((t, i) => { %>
+      <a class="br-button <%= i === 0 ? 'primary' : 'secondary' %> mr-2 mb-1" href="/campi/<%= campus.id %>/estoque/titulos/<%= titulo.id %>/<%= t.caminho %>"><%= t.titulo %></a>
+    <% }) %>
+  </p>
+<% } %>
+<h2 class="mt-4">Movimentações</h2>
+<%- include('historico', { comTitulo: false, campusId: campus.id }) %>
+<%- include('../parciais/paginacao', { rotulo: 'Paginação das movimentações', link: (p) => '/campi/' + campus.id + '/estoque/titulos/' + titulo.id + '?pagina=' + p }) %>
+<%- include('../parciais/rodape') %>

@@ -9,6 +9,9 @@ import { carregarUsuario, rotasDeAcesso } from './modulos/acesso/rotas.js';
 import { rotasDeCampi } from './modulos/campi/rotas.js';
 import { rotasDeOferta } from './modulos/campi/rotas-oferta.js';
 import { rotasDeCatalogo } from './modulos/catalogo/rotas.js';
+import { rotasDeEstoque } from './modulos/estoque/rotas.js';
+import { rotasDeEstudantes } from './modulos/estudantes/rotas.js';
+import { formularioComArquivo } from './infra/web/multipart.js';
 import { consumirAviso } from './infra/web/rotas.js';
 import { obterInstituicao } from './modulos/acesso/servico.js';
 
@@ -64,12 +67,15 @@ export function criarApp({ pool, config, provedor = null }) {
       }
     });
     app.use(carregarUsuario({ pool }));
+    app.use(formularioComArquivo()); // antes do CSRF: o token vem nos campos do formulário
     app.use(protecaoCsrf);
     app.use(consumirAviso);
     app.use(rotasDeAcesso({ pool, config, provedor }));
     app.use(rotasDeCampi({ pool }));
     app.use(rotasDeOferta({ pool }));
     app.use(rotasDeCatalogo({ pool }));
+    app.use(rotasDeEstoque({ pool }));
+    app.use(rotasDeEstudantes({ pool }));
   }
 
   app.use((req, res) => {

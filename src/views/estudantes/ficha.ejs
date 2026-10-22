@@ -1,0 +1,37 @@
+<%- include('../parciais/topo') %>
+<p><a href="/campi/<%= campus.id %>/estudantes">Voltar aos estudantes</a></p>
+<h1><%= estudante.nome %></h1>
+<dl>
+  <dt>Matrícula</dt><dd><%= estudante.matricula %></dd>
+  <dt>E-mail institucional</dt><dd><%= estudante.email %></dd>
+  <dt>Acesso ao sistema</dt><dd><%= estudante.conta_ligada ? 'Já entrou para consultar seus livros' : 'Ainda não entrou' %></dd>
+</dl>
+<% if (podeGerir && ativo) { %>
+  <p>
+    <a class="br-button secondary mr-2 mb-1" href="/campi/<%= campus.id %>/estudantes/<%= estudante.id %>/editar">Editar dados</a>
+    <a class="br-button secondary mb-1" href="/vinculos/<%= ativo.id %>/encerrar">Encerrar vínculo</a>
+  </p>
+<% } %>
+
+<h2 class="mt-4">Vínculos com <%= campus.nome_curto %></h2>
+<%# Table: https://www.gov.br/ds/components/table (estrutura do exemplo table-irregular-1, core 3.7.0). %>
+<div class="br-table" title="Vínculos">
+  <table aria-label="Vínculos do estudante com o campus">
+    <thead><tr><th scope="col">Situação</th><th scope="col">Curso</th><th scope="col">Série</th><th scope="col">Ano letivo</th><th scope="col">Início</th><th scope="col">Encerramento</th></tr></thead>
+    <tbody>
+      <% vinculos.forEach((v) => { %>
+        <tr>
+          <td><%= SITUACOES[v.situacao] %></td>
+          <td><%= v.curso %></td>
+          <td><%= v.serie %>ª</td>
+          <td><%= v.ano_letivo %></td>
+          <td><%= dataBr(v.inicio) %></td>
+          <td><%= dataBr(v.fim) %><%= v.encerrado_por ? ' (' + v.encerrado_por + ')' : '' %></td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+<h2 class="mt-4">Livros, entregas e devoluções</h2>
+<%- include('../parciais/mensagem', { tipo: 'info', titulo: 'Os livros em posse, as entregas e as devoluções aparecerão aqui quando o atendimento estiver disponível.', corpo: null }) %>
+<%- include('../parciais/rodape') %>

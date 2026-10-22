@@ -1,0 +1,31 @@
+<%- include('../parciais/topo') %>
+<p><a href="/campi/<%= campus.id %>/estoque">Voltar ao estoque</a></p>
+<h1>Registrar entrada — <%= campus.nome_curto %></h1>
+<p>Busque o título no catálogo. Se ele ainda não estiver cadastrado, <a href="/catalogo/novo">cadastre-o no catálogo</a> antes.</p>
+<form method="get" action="/campi/<%= campus.id %>/estoque/entrada" class="col-md-8 px-0 mb-3" role="search">
+  <%- include('../parciais/campo', { id: 'q', nome: 'q', rotulo: 'Buscar no catálogo por título, autor, componente ou ISBN', tipo: 'search', valor: termo, maximo: 100 }) %>
+  <button class="br-button primary" type="submit">Buscar</button>
+</form>
+<% if (termo && titulos.length === 0) { %>
+  <%- include('../parciais/mensagem', { tipo: 'info', titulo: 'Nenhum título encontrado no catálogo.', corpo: null }) %>
+<% } else if (titulos.length) { %>
+  <%# Table: https://www.gov.br/ds/components/table (estrutura do exemplo table-irregular-1, core 3.7.0). %>
+  <div class="br-table" title="Títulos do catálogo">
+    <div class="table-header">
+      <div class="top-bar"><div class="table-title"><%= total %> título(s) encontrados<%= total > titulos.length ? '; refine a busca para ver os demais' : '' %></div></div>
+    </div>
+    <table aria-label="Títulos do catálogo">
+      <thead><tr><th scope="col">Título</th><th scope="col">ISBN</th><th scope="col">Ação</th></tr></thead>
+      <tbody>
+        <% titulos.forEach((t) => { %>
+          <tr>
+            <td><%= t.titulo %><%= t.volume ? ' — ' + t.volume : '' %><br><span class="text-down-01"><%= t.autores %></span></td>
+            <td><%= formatarIsbn(t.isbn13) || '—' %></td>
+            <td><a class="br-button secondary small" href="/campi/<%= campus.id %>/estoque/titulos/<%= t.id %>/entrada" aria-label="Registrar entrada de <%= t.titulo %>">Registrar entrada</a></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+<% } %>
+<%- include('../parciais/rodape') %>

@@ -1,0 +1,28 @@
+<%- include('../parciais/topo') %>
+<% const edicao = Boolean(estudante); %>
+<p><a href="/campi/<%= campus.id %>/estudantes<%= edicao ? '/' + estudante.id : '' %>">Voltar</a></p>
+<h1><%= edicao ? 'Editar estudante' : 'Cadastrar estudante' %></h1>
+<% if (!edicao) { %><p>Se a matrícula já estiver cadastrada no IFC (por exemplo, num vínculo encerrado), o estudante é aproveitado e recebe um vínculo com <%= campus.nome_curto %>.</p><% } %>
+<% if (!cursos.length || !anos.length) { %>
+  <%- include('../parciais/mensagem', { tipo: 'warning', titulo: 'Cadastre antes os cursos e os anos letivos do campus.', corpo: null }) %>
+  <p><a class="br-button secondary" href="/campi/<%= campus.id %>/oferta">Anos letivos e cursos</a></p>
+<% } else { %>
+  <% if (Object.keys(erros).length) { %>
+    <div class="mb-3"><%- include('../parciais/mensagem', { tipo: 'danger', titulo: 'Corrija os campos indicados.', corpo: null }) %></div>
+  <% } %>
+  <form method="post" action="/campi/<%= campus.id %>/estudantes/<%= edicao ? estudante.id + '/editar' : 'novo' %>" class="col-md-8 px-0">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <% if (edicao) { %>
+      <%- include('../parciais/campo', { id: 'matricula', nome: 'matricula', rotulo: 'Matrícula', valor: estudante.matricula, somenteLeitura: true, ajuda: 'A matrícula identifica o estudante em todo o IFC e não muda.' }) %>
+    <% } else { %>
+      <%- include('../parciais/campo', { id: 'matricula', nome: 'matricula', rotulo: 'Matrícula', valor: valores.matricula, erro: erros.matricula, obrigatorio: true, maximo: 30 }) %>
+    <% } %>
+    <%- include('../parciais/campo', { id: 'nome', nome: 'nome', rotulo: 'Nome completo', valor: valores.nome, erro: erros.nome, obrigatorio: true, maximo: 200, autocomplete: 'off' }) %>
+    <%- include('../parciais/campo', { id: 'email', nome: 'email', rotulo: 'E-mail institucional', tipo: 'email', valor: valores.email, erro: erros.email, obrigatorio: true, maximo: 200, autocomplete: 'off', ajuda: 'É com este e-mail que o estudante entra no sistema para consultar seus livros.' }) %>
+    <%- include('../parciais/radios', { id: 'curso', nome: 'cursoId', legenda: 'Curso', valor: valores.cursoId, erro: erros.curso, obrigatorio: true, opcoes: cursos.map((c) => [c.id, c.nome]) }) %>
+    <%- include('../parciais/radios', { id: 'serie', nome: 'serie', legenda: 'Série', valor: valores.serie, erro: erros.serie, obrigatorio: true, opcoes: [[1, '1ª série'], [2, '2ª série'], [3, '3ª série'], [4, '4ª série']] }) %>
+    <%- include('../parciais/radios', { id: 'ano', nome: 'periodoId', legenda: 'Ano letivo', valor: valores.periodoId, erro: erros.anoLetivo, obrigatorio: true, opcoes: anos.map((a) => [a.id, String(a.ano)]) }) %>
+    <button class="br-button primary" type="submit"><%= edicao ? 'Salvar' : 'Cadastrar estudante' %></button>
+  </form>
+<% } %>
+<%- include('../parciais/rodape') %>

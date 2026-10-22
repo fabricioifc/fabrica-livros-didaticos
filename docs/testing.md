@@ -64,6 +64,12 @@ npm test
 | `test/integration/catalogo-servico.test.js` | RF-020: cadastro, ISBN repetido (inclusive como ISBN-10), série específica, busca, permissões (RN-75) e reforço no banco |
 | `test/integration/rotas-catalogo.test.js` | RF-020 pela interface: CSRF, ISBN repetido com link, erros juntos, 403/404, XSS |
 | `test/unit/catalogo-dominio.test.js` | ISBN-10/13 (dígitos e conversão) e regra de abrangência/série |
+| `test/integration/estoque-servico.test.js` | RF-025 a RF-028: entrada, baixa e ajuste, saldo insuficiente, consistência com o livro-razão, isolamento entre campi, permissões, RLS, imutabilidade e duas baixas simultâneas |
+| `test/integration/rotas-estoque.test.js` | Estoque pela interface: CSRF, mensagens nos campos (422), 403 para Consulta, 404 para outro campus |
+| `test/unit/estoque-dominio.test.js` | Validação das movimentações (quantidade, origem, justificativa, sentido do ajuste) e saldo suficiente |
+| `test/integration/estudantes-servico.test.js` | RF-030 a RF-033: cadastro, edição, unicidade no IFC, um vínculo ativo, importação tudo ou nada (inclusive Windows-1252), consulta, encerramento, isolamento entre campi, RLS e imutabilidade |
+| `test/integration/rotas-estudantes.test.js` | Estudantes pela interface: CSRF (inclusive no envio de arquivo), busca sem dados pessoais na URL, importação com erros por linha, 403/404 |
+| `test/unit/estudantes-dominio.test.js` | Leitura do CSV (separador, aspas, codificação, cabeçalho), série, domínio do e-mail e encerramento |
 | `test/integration/app.test.js` | Servidor HTTP: `GET /saude` (inclusive com banco fora do ar) e 404 padrão |
 | `test/integration/test-database.test.js` | Versão e conexão do banco, desfazimento de transações |
 | `test/docs/` | Consistência da documentação e regressões de decisões revogadas |
@@ -87,11 +93,11 @@ npm test
 
 | Métrica | Quantidade |
 |---|---|
-| Aprovados | 206 |
+| Aprovados | 258 |
 | Falhos | 0 |
 | Ignorados (`skip`) | 0 |
-| Pendentes (`todo`, funcionalidades não implementadas) | 69 |
-| Total | 275 |
+| Pendentes (`todo`, funcionalidades não implementadas) | 63 |
+| Total | 321 |
 
 Cobertura (`npm run test:coverage`), incluindo `test/helpers/`: 98,0% das linhas e 95,1% dos ramos; `servico.js` e `dominio.js` do acesso com 100% das linhas. Lacunas conhecidas:
 
@@ -106,6 +112,7 @@ Cobertura de linhas **não** prova correção: ela mostra o que foi executado, n
 
 | Data | Defeito | Correção |
 |---|---|---|
+| 2026-10-21 | Baixa com saldo suficiente era recusada pelo banco: no `INSERT ... ON CONFLICT DO UPDATE`, o `CHECK (disponivel >= 0)` é avaliado no registro proposto (quantidade negativa) antes de resolver o conflito. | O gatilho faz `UPDATE` primeiro e só insere a linha de estoque se ela não existir; teste de concorrência. |
 | 2026-10-21 | No cadastro de título, com ISBN inválido o erro da série não aparecia: o zod não executa refinamentos de objeto quando um campo falha, então o usuário só via um erro por vez. | Validação da abrangência/série em esquema separado e erros mesclados; teste de regressão. |
 | 2026-10-21 | `CHECK` da recusa de solicitação aceitava motivo `NULL` (`length(NULL)` é `NULL`, e `CHECK` nulo passa). O mesmo padrão estava no esboço de `devolucao_item` do AGENTS.md. | `COALESCE(length(trim(...)), 0) > 0` na migração 001 e no AGENTS.md; teste de regressão com `NULL`, vazio e só espaços. |
 

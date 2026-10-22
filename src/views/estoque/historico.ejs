@@ -1,0 +1,33 @@
+<%#
+  Histórico de movimentações (RF-028, CA-028.1): tipo, quantidade, data/hora, responsável e referência.
+  Table: https://www.gov.br/ds/components/table (estrutura do exemplo table-irregular-1, core 3.7.0).
+  Parâmetros: movimentacoes, total, comTitulo (mostra a coluna do título), campusId.
+%>
+<% if (movimentacoes.length === 0) { %>
+  <%- include('../parciais/mensagem', { tipo: 'info', titulo: 'Nenhuma movimentação registrada.', corpo: null }) %>
+<% } else { %>
+  <div class="br-table" title="Movimentações">
+    <div class="table-header">
+      <div class="top-bar"><div class="table-title"><%= total %> movimentação(ões)</div></div>
+    </div>
+    <table aria-label="Movimentações do estoque">
+      <thead><tr>
+        <th scope="col">Data e hora</th>
+        <% if (comTitulo) { %><th scope="col">Título</th><% } %>
+        <th scope="col">Tipo</th><th scope="col">Quantidade</th><th scope="col">Responsável</th><th scope="col">Origem ou justificativa</th>
+      </tr></thead>
+      <tbody>
+        <% movimentacoes.forEach((m) => { %>
+          <tr>
+            <td><%= dataHora(m.ocorrido_em) %></td>
+            <% if (comTitulo) { %><td><a href="/campi/<%= campusId %>/estoque/titulos/<%= m.titulo_id %>"><%= m.titulo %><%= m.volume ? ' — ' + m.volume : '' %></a></td><% } %>
+            <td><%= ROTULOS_TIPO[m.tipo] %></td>
+            <td><%= m.quantidade > 0 ? '+' + m.quantidade : m.quantidade %></td>
+            <td><%= m.responsavel %></td>
+            <td><%= m.origem || m.justificativa || '—' %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+<% } %>

@@ -1,0 +1,51 @@
+<%- include('../parciais/topo') %>
+<p><a href="/">Voltar ao início</a></p>
+<h1>Estudantes — <%= campus.nome_curto %></h1>
+<p>Estudantes com vínculo (atual ou encerrado) neste campus. A matrícula é única em todo o IFC.</p>
+<% if (podeGerir) { %>
+  <p>
+    <a class="br-button primary mr-2 mb-1" href="/campi/<%= campus.id %>/estudantes/novo">Cadastrar estudante</a>
+    <a class="br-button secondary mb-1" href="/campi/<%= campus.id %>/estudantes/importar">Importar planilha</a>
+  </p>
+<% } %>
+
+<%# A busca vai por POST e fica na sessão: nome e matrícula não aparecem na URL (regra 14). %>
+<form method="post" action="/campi/<%= campus.id %>/estudantes/busca" class="col-md-8 px-0 mb-3" role="search">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <%- include('../parciais/campo', { id: 'termo', nome: 'termo', rotulo: 'Buscar por nome ou matrícula', tipo: 'search', valor: filtros.termo, maximo: 100 }) %>
+  <%- include('../parciais/radios', { id: 'situacao', nome: 'situacao', legenda: 'Vínculo', valor: filtros.situacao ?? '', opcoes: [['ATIVO', 'Ativos'], ['ENCERRADO', 'Encerrados'], ['', 'Todos']] }) %>
+  <%- include('../parciais/radios', { id: 'serie', nome: 'serie', legenda: 'Série', valor: filtros.serie ?? '', opcoes: [['', 'Todas'], [1, '1ª'], [2, '2ª'], [3, '3ª'], [4, '4ª']] }) %>
+  <% if (cursos.length > 1) { %>
+    <%- include('../parciais/radios', { id: 'curso', nome: 'cursoId', legenda: 'Curso', valor: filtros.cursoId ?? '', opcoes: [['', 'Todos'], ...cursos.map((c) => [c.id, c.nome])] }) %>
+  <% } %>
+  <button class="br-button secondary" type="submit">Buscar</button>
+  <button class="br-button secondary ml-2" type="submit" name="limpar" value="1">Limpar busca</button>
+</form>
+
+<% if (estudantes.length === 0) { %>
+  <%- include('../parciais/mensagem', { tipo: 'info', titulo: 'Nenhum estudante encontrado.', corpo: podeGerir ? 'Cadastre estudantes ou importe uma planilha.' : null }) %>
+<% } else { %>
+  <%# Table: https://www.gov.br/ds/components/table (estrutura do exemplo table-irregular-1, core 3.7.0). %>
+  <div class="br-table" title="Estudantes">
+    <div class="table-header">
+      <div class="top-bar"><div class="table-title"><%= total %> estudante(s)</div></div>
+    </div>
+    <table aria-label="Estudantes do campus">
+      <thead><tr><th scope="col">Nome</th><th scope="col">Matrícula</th><th scope="col">Curso</th><th scope="col">Série</th><th scope="col">Ano letivo</th><th scope="col">Vínculo</th></tr></thead>
+      <tbody>
+        <% estudantes.forEach((e) => { %>
+          <tr>
+            <td><a href="/campi/<%= campus.id %>/estudantes/<%= e.estudante_id %>"><%= e.nome %></a></td>
+            <td><%= e.matricula %></td>
+            <td><%= e.curso %></td>
+            <td><%= e.serie %>ª</td>
+            <td><%= e.ano_letivo %></td>
+            <td><%= SITUACOES[e.situacao] %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+  <%- include('../parciais/paginacao', { rotulo: 'Paginação dos estudantes', link: (p) => '/campi/' + campus.id + '/estudantes?pagina=' + p }) %>
+<% } %>
+<%- include('../parciais/rodape') %>

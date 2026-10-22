@@ -44,7 +44,7 @@ WHERE NOT EXISTS (SELECT 1 FROM atribuicao a WHERE a.usuario_id = u.id AND a.cam
 
 -- Estudantes fictícios (cadastro, sem conta de login). Matrículas com prefixo DEV.
 INSERT INTO estudante (matricula, nome, email_institucional) VALUES
-  ('DEV0001', 'Helena Exemplo (fictícia)', 'helena.exemplo@exemplo.invalid'),
-  ('DEV0002', 'Igor Exemplo (fictício)',   'igor.exemplo@exemplo.invalid'),
-  ('DEV0003', 'Júlia Exemplo (fictícia)',  'julia.exemplo@exemplo.invalid')
+  ('DEV0001', 'Helena Exemplo (fictícia)', 'helena.exemplo@estudantes.exemplo.invalid'),
+  ('DEV0002', 'Igor Exemplo (fictício)',   'igor.exemplo@estudantes.exemplo.invalid'),
+  ('DEV0003', 'Júlia Exemplo (fictícia)',  'julia.exemplo@estudantes.exemplo.invalid')
 ON CONFLICT (matricula) DO NOTHING;

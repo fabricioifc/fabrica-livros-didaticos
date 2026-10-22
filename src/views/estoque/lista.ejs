@@ -1,0 +1,37 @@
+<%- include('../parciais/topo') %>
+<p><a href="/">Voltar ao início</a> · <a href="/campi/<%= campus.id %>/estoque/movimentacoes">Histórico de movimentações</a></p>
+<h1>Estoque — <%= campus.nome_curto %></h1>
+<p>Exemplares de cada título neste campus. Cada campus controla o próprio estoque; não há transferência de livros entre campi.</p>
+<% if (podeMovimentar) { %><p><a class="br-button primary" href="/campi/<%= campus.id %>/estoque/entrada">Registrar entrada de livros</a></p><% } %>
+
+<form method="get" action="/campi/<%= campus.id %>/estoque" class="col-md-8 px-0 mb-3" role="search">
+  <%- include('../parciais/campo', { id: 'q', nome: 'q', rotulo: 'Buscar por título, autor ou ISBN', tipo: 'search', valor: termo, maximo: 100 }) %>
+  <button class="br-button secondary" type="submit">Buscar</button>
+  <% if (termo) { %><a class="br-button secondary ml-2" href="/campi/<%= campus.id %>/estoque">Limpar busca</a><% } %>
+</form>
+
+<% if (itens.length === 0) { %>
+  <%- include('../parciais/mensagem', { tipo: 'info', titulo: termo ? 'Nenhum título do estoque encontrado para a busca.' : 'Ainda não há livros no estoque deste campus.', corpo: podeMovimentar && !termo ? 'Comece registrando uma entrada.' : null }) %>
+<% } else { %>
+  <%# Table: https://www.gov.br/ds/components/table (estrutura do exemplo table-irregular-1, core 3.7.0). %>
+  <div class="br-table" title="Estoque">
+    <div class="table-header">
+      <div class="top-bar"><div class="table-title"><%= total %> título(s)<%= termo ? ' encontrados' : '' %></div></div>
+    </div>
+    <table aria-label="Estoque do campus por título">
+      <thead><tr><th scope="col">Título</th><th scope="col">ISBN</th><th scope="col">Disponíveis</th><th scope="col">Baixados</th></tr></thead>
+      <tbody>
+        <% itens.forEach((t) => { %>
+          <tr>
+            <td><a href="/campi/<%= campus.id %>/estoque/titulos/<%= t.titulo_id %>"><%= t.titulo %><%= t.volume ? ' — ' + t.volume : '' %></a><br><span class="text-down-01"><%= t.autores %></span></td>
+            <td><%= formatarIsbn(t.isbn13) || '—' %></td>
+            <td><%= t.disponivel %></td>
+            <td><%= t.baixados %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+  <%- include('../parciais/paginacao', { rotulo: 'Paginação do estoque', link: (p) => '/campi/' + campus.id + '/estoque?pagina=' + p + (termo ? '&q=' + encodeURIComponent(termo) : '') }) %>
+<% } %>
+<%- include('../parciais/rodape') %>

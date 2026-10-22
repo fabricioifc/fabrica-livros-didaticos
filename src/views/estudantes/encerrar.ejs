@@ -1,0 +1,16 @@
+<%- include('../parciais/topo') %>
+<p><a href="/campi/<%= vinculo.campus_id %>/estudantes/<%= estudante.id %>">Voltar</a></p>
+<h1>Encerrar vínculo</h1>
+<p><strong><%= estudante.nome %></strong> · matrícula <%= estudante.matricula %> · <%= vinculo.curso %>, <%= vinculo.serie %>ª série, <%= vinculo.ano_letivo %></p>
+<%- include('../parciais/mensagem', { tipo: 'warning', titulo: 'O encerramento não pode ser desfeito.', corpo: 'A data informada passa a ser o prazo de devolução de todos os livros que estiverem com o estudante. O histórico continua disponível.' }) %>
+<% if (Object.keys(erros).length) { %>
+  <div class="my-3"><%- include('../parciais/mensagem', { tipo: 'danger', titulo: 'Corrija os campos indicados.', corpo: null }) %></div>
+<% } %>
+<form method="post" action="/vinculos/<%= vinculo.id %>/encerrar" class="col-md-6 px-0 mt-3">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <%- include('../parciais/radios', { id: 'situacao', nome: 'situacao', legenda: 'Motivo', valor: valores.situacao, erro: erros.situacao, obrigatorio: true, opcoes: SITUACOES_ENCERRAMENTO.map((s) => [s, SITUACOES[s]]) }) %>
+  <%- include('../parciais/campo', { id: 'fim', nome: 'fim', rotulo: 'Data do encerramento', tipo: 'date', valor: valores.fim, erro: erros.fim, obrigatorio: true }) %>
+  <button class="br-button primary" type="submit">Encerrar vínculo</button>
+  <a class="br-button secondary ml-2" href="/campi/<%= vinculo.campus_id %>/estudantes/<%= estudante.id %>">Cancelar</a>
+</form>
+<%- include('../parciais/rodape') %>

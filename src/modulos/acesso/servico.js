@@ -61,6 +61,9 @@ export const ehAdministradorInstitucional = (ctx) => ctx.usuario.tipo === 'SERVI
 export const administraCampus = (ctx, campusId) => ctx.usuario.tipo === 'SERVIDOR' && dominio.podeDecidirSolicitacao(ctx.atribuicoes, campusId);
 // Servidor com qualquer papel vigente (em algum campus ou institucional).
 export const temAcessoDeServidor = (ctx) => ctx.usuario.tipo === 'SERVIDOR' && dominio.vigentes(ctx.atribuicoes).length > 0;
+// Vê os dados do campus: qualquer papel vigente nele ou escopo institucional (CA-027.2).
+export const temAcessoAoCampus = (ctx, campusId) => ctx.usuario.tipo === 'SERVIDOR'
+  && (dominio.papeisNoCampus(ctx.atribuicoes, campusId).size > 0 || escopoDe(ctx).escopoInstitucional);
 // Administração institucional ou Administração de pelo menos um campus.
 export const administraAlgumCampus = (ctx) => ehAdministradorInstitucional(ctx)
   || (ctx.usuario.tipo === 'SERVIDOR' && dominio.vigentes(ctx.atribuicoes).some((a) => a.papel === 'ADMIN_CAMPUS'));

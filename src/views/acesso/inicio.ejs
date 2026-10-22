@@ -4,7 +4,7 @@
 <h2>Seus acessos</h2>
 <ul>
   <% institucionais.forEach((p) => { %><li><%= nomes[p] %> — todos os campi</li><% }) %>
-  <% acessos.forEach((a) => { %><li><strong><%= a.campus %>:</strong> <%= a.papeis.map((p) => nomes[p]).join(', ') %></li><% }) %>
+  <% acessos.forEach((a) => { %><li><strong><%= a.campus %>:</strong> <%= a.papeis.map((p) => nomes[p]).join(', ') %> · <a href="/campi/<%= a.campusId %>/estudantes" aria-label="Estudantes de <%= a.campus %>">estudantes</a> · <a href="/campi/<%= a.campusId %>/estoque" aria-label="Estoque de <%= a.campus %>">estoque</a></li><% }) %>
 </ul>
 <p><a class="br-button secondary" href="/catalogo">Catálogo de títulos</a></p>
 <% if (pendentes !== null) { %>
@@ -20,11 +20,13 @@
         <li><strong><%= c.nome %>:</strong>
           <a href="/acesso/campi/<%= c.id %>/equipe" aria-label="Equipe de <%= c.nome %>">equipe</a> ·
           <a href="/campi/<%= c.id %>/configuracao" aria-label="Configuração de <%= c.nome %>">configuração</a> ·
-          <a href="/campi/<%= c.id %>/oferta" aria-label="Anos letivos e cursos de <%= c.nome %>">anos letivos e cursos</a>
+          <a href="/campi/<%= c.id %>/oferta" aria-label="Anos letivos e cursos de <%= c.nome %>">anos letivos e cursos</a> ·
+          <a href="/campi/<%= c.id %>/estudantes" aria-label="Estudantes de <%= c.nome %>">estudantes</a> ·
+          <a href="/campi/<%= c.id %>/estoque" aria-label="Estoque de <%= c.nome %>">estoque</a>
         </li>
       <% }) %>
     </ul>
   <% } %>
 <% } %>
-<%- include('../parciais/mensagem', { tipo: 'info', titulo: 'Funcionalidades em desenvolvimento.', corpo: 'Estoque, entregas e devoluções serão liberados nas próximas versões.' }) %>
+<%- include('../parciais/mensagem', { tipo: 'info', titulo: 'Funcionalidades em desenvolvimento.', corpo: 'Entregas e devoluções serão liberadas nas próximas versões.' }) %>
 <%- include('../parciais/rodape') %>

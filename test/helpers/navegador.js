@@ -37,13 +37,16 @@ export class Navegador {
     this.cookie = '';
   }
 
-  async pedir(caminho, { method = 'GET', form } = {}) {
+  // `form`: campos de texto (urlencoded); `multipart`: FormData (formulários com arquivo).
+  async pedir(caminho, { method = 'GET', form, multipart } = {}) {
     const headers = { accept: 'text/html' };
     if (this.cookie) headers.cookie = this.cookie;
     let body;
     if (form) {
       headers['content-type'] = 'application/x-www-form-urlencoded';
       body = new URLSearchParams(form).toString();
+    } else if (multipart) {
+      body = multipart; // o fetch define o content-type com o boundary
     }
     const r = await fetch(new URL(caminho, this.base), { method, headers, body, redirect: 'manual' });
     const setCookie = r.headers.getSetCookie();

@@ -44,6 +44,26 @@ export function gerarIsbn() {
   return `${doze}${(10 - (soma % 10)) % 10}`;
 }
 
+// Título fictício no catálogo (global), sem ISBN por padrão.
+export async function criarTitulo(db, criadoPor, { titulo = 'Livro Fictício', isbn13 = null } = {}) {
+  const { rows } = await db.query(
+    `INSERT INTO titulo (titulo, autores, isbn13, abrangencia, criado_por) VALUES ($1, 'Autoria Fictícia', $2, 'ENSINO_MEDIO_COMPLETO', $3)
+     RETURNING id, titulo`,
+    [`${titulo} ${sufixo()}`, isbn13, criadoPor],
+  );
+  return rows[0];
+}
+
+// Oferta mínima de um campus: um curso ativo e um ano letivo.
+export async function criarOferta(db, campusId, { curso = 'Técnico Fictício', ano = 2027 } = {}) {
+  const c = await db.query('INSERT INTO curso (campus_id, nome) VALUES ($1, $2) RETURNING id, nome', [campusId, `${curso} ${sufixo()}`]);
+  const p = await db.query(
+    "INSERT INTO periodo_letivo (campus_id, ano, inicio, fim) VALUES ($1, $2::int, make_date($2::int, 2, 1), make_date($2::int, 12, 15)) RETURNING id, ano",
+    [campusId, ano],
+  );
+  return { curso: c.rows[0], ano: p.rows[0] };
+}
+
 // Cadastro de estudante (matrícula fictícia), opcionalmente já ligado a uma conta.
 export async function criarEstudante(db, { email, nome = 'Estudante Fictício', usuarioId = null } = {}) {
   const s = sufixo();

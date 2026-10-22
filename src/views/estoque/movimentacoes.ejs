@@ -1,0 +1,7 @@
+<%- include('../parciais/topo') %>
+<p><a href="/campi/<%= campus.id %>/estoque">Voltar ao estoque</a></p>
+<h1>Movimentações do estoque — <%= campus.nome_curto %></h1>
+<p>Registro permanente de entradas, baixas e ajustes. Movimentações não são alteradas nem apagadas; correções são feitas por novas movimentações.</p>
+<%- include('historico', { comTitulo: true, campusId: campus.id }) %>
+<%- include('../parciais/paginacao', { rotulo: 'Paginação das movimentações', link: (p) => '/campi/' + campus.id + '/estoque/movimentacoes?pagina=' + p }) %>
+<%- include('../parciais/rodape') %>

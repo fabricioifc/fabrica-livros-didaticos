@@ -1,0 +1,8 @@
+<%# Navegação entre páginas. Parâmetros: pagina, paginas, link (função página → URL), rotulo. %>
+<% if (paginas > 1) { %>
+  <nav class="mt-3" aria-label="<%= rotulo %>">
+    <% if (pagina > 1) { %><a class="br-button secondary small" href="<%= link(pagina - 1) %>">Anterior</a><% } %>
+    <span class="mx-2">Página <%= pagina %> de <%= paginas %></span>
+    <% if (pagina < paginas) { %><a class="br-button secondary small" href="<%= link(pagina + 1) %>">Próxima</a><% } %>
+  </nav>
+<% } %>
